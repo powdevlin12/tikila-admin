@@ -4,3 +4,4 @@ export * from './mutations';
 export { default as apiClient } from './api';
 export * from './authService';
 export { CompanyService } from './companyService';
+export { ContactService } from './contactService';

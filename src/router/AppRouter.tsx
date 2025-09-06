@@ -31,7 +31,7 @@ const AppRouter: React.FC = () => {
 					}
 				/>
 				<Route
-					path='/admin/users'
+					path='/admin/contacts'
 					element={
 						<ProtectedRoute>
 							<MainLayout>

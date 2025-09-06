@@ -21,9 +21,9 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 			exact: true,
 		},
 		{
-			path: '/admin/users',
+			path: '/admin/contacts',
 			icon: <UserOutlined />,
-			label: 'Users',
+			label: 'Liên hệ',
 		},
 		{
 			path: '/admin/products',
