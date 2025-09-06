@@ -164,10 +164,12 @@ export const Company = () => {
 		return (
 			<div className='loading'>
 				<div>Đang tải...</div>
-				<div>Auth Status: {isAuthenticated ? 'Authenticated' : 'Not authenticated'}</div>
+				<div>
+					Auth Status: {isAuthenticated ? 'Authenticated' : 'Not authenticated'}
+				</div>
 				<div>Token: {token ? 'Present' : 'Missing'}</div>
 				<div>User: {user?.email || 'No user'}</div>
-				
+
 				{!isAuthenticated && (
 					<div style={{ marginTop: '20px' }}>
 						<h3>Vui lòng đăng nhập để tiếp tục:</h3>
@@ -195,192 +197,212 @@ export const Company = () => {
 				</div>
 
 				<form onSubmit={handleUpdateCompanyInfo} className='company-form'>
-					<div className='form-row'>
+					<div className='company-form-left'>
+						<div className='form-row'>
+							<div className='form-group'>
+								<label>Tên công ty:</label>
+								{editMode ? (
+									<Input
+										value={companyData.name ?? companyInfo.name ?? ''}
+										onChange={e => handleInputChange('name', e.target.value)}
+										placeholder='Nhập tên công ty'
+									/>
+								) : (
+									<p className='form-value'>
+										{companyInfo.name || 'Chưa có thông tin'}
+									</p>
+								)}
+							</div>
+
+							<div className='form-group'>
+								<label>Email:</label>
+								{editMode ? (
+									<Input
+										type='email'
+										value={companyData.email ?? companyInfo.email ?? ''}
+										onChange={e => handleInputChange('email', e.target.value)}
+										placeholder='Nhập email công ty'
+									/>
+								) : (
+									<p className='form-value'>
+										{companyInfo.email || 'Chưa có thông tin'}
+									</p>
+								)}
+							</div>
+						</div>
+
+						<div className='form-row'>
+							<div className='form-group'>
+								<label>Địa chỉ:</label>
+								{editMode ? (
+									<Input
+										value={companyData.address ?? companyInfo.address ?? ''}
+										onChange={e => handleInputChange('address', e.target.value)}
+										placeholder='Nhập địa chỉ công ty'
+									/>
+								) : (
+									<p className='form-value'>
+										{companyInfo.address || 'Chưa có thông tin'}
+									</p>
+								)}
+							</div>
+
+							<div className='form-group'>
+								<label>Mã số thuế:</label>
+								{editMode ? (
+									<Input
+										value={companyData.tax_code ?? companyInfo.tax_code ?? ''}
+										onChange={e =>
+											handleInputChange('tax_code', e.target.value)
+										}
+										placeholder='Nhập mã số thuế'
+									/>
+								) : (
+									<p className='form-value'>
+										{companyInfo.tax_code || 'Chưa có thông tin'}
+									</p>
+								)}
+							</div>
+						</div>
+
 						<div className='form-group'>
-							<label>Tên công ty:</label>
+							<label>Nội dung chào mừng:</label>
 							{editMode ? (
-								<Input
-									value={companyData.name ?? companyInfo.name ?? ''}
-									onChange={e => handleInputChange('name', e.target.value)}
-									placeholder='Nhập tên công ty'
+								<textarea
+									className='form-textarea'
+									value={
+										companyData.welcome_content ??
+										companyInfo.welcome_content ??
+										''
+									}
+									onChange={e =>
+										handleInputChange('welcome_content', e.target.value)
+									}
+									placeholder='Nhập nội dung chào mừng'
+									rows={3}
 								/>
 							) : (
 								<p className='form-value'>
-									{companyInfo.name || 'Chưa có thông tin'}
+									{companyInfo.welcome_content || 'Chưa có thông tin'}
 								</p>
 							)}
 						</div>
 
 						<div className='form-group'>
-							<label>Email:</label>
+							<label>Nội dung giới thiệu:</label>
 							{editMode ? (
-								<Input
-									type='email'
-									value={companyData.email ?? companyInfo.email ?? ''}
-									onChange={e => handleInputChange('email', e.target.value)}
-									placeholder='Nhập email công ty'
+								<textarea
+									className='form-textarea'
+									value={companyData.intro_text ?? companyInfo.intro_text ?? ''}
+									onChange={e =>
+										handleInputChange('intro_text', e.target.value)
+									}
+									placeholder='Nhập nội dung giới thiệu'
+									rows={4}
 								/>
 							) : (
 								<p className='form-value'>
-									{companyInfo.email || 'Chưa có thông tin'}
-								</p>
-							)}
-						</div>
-					</div>
-
-					<div className='form-row'>
-						<div className='form-group'>
-							<label>Địa chỉ:</label>
-							{editMode ? (
-								<Input
-									value={companyData.address ?? companyInfo.address ?? ''}
-									onChange={e => handleInputChange('address', e.target.value)}
-									placeholder='Nhập địa chỉ công ty'
-								/>
-							) : (
-								<p className='form-value'>
-									{companyInfo.address || 'Chưa có thông tin'}
+									{companyInfo.intro_text || 'Chưa có thông tin'}
 								</p>
 							)}
 						</div>
 
-						<div className='form-group'>
-							<label>Mã số thuế:</label>
-							{editMode ? (
-								<Input
-									value={companyData.tax_code ?? companyInfo.tax_code ?? ''}
-									onChange={e => handleInputChange('tax_code', e.target.value)}
-									placeholder='Nhập mã số thuế'
-								/>
-							) : (
-								<p className='form-value'>
-									{companyInfo.tax_code || 'Chưa có thông tin'}
-								</p>
-							)}
-						</div>
-					</div>
-
-					<div className='form-group'>
-						<label>Nội dung chào mừng:</label>
-						{editMode ? (
-							<textarea
-								className='form-textarea'
-								value={
-									companyData.welcome_content ??
-									companyInfo.welcome_content ??
-									''
-								}
-								onChange={e =>
-									handleInputChange('welcome_content', e.target.value)
-								}
-								placeholder='Nhập nội dung chào mừng'
-								rows={3}
-							/>
-						) : (
-							<p className='form-value'>
-								{companyInfo.welcome_content || 'Chưa có thông tin'}
-							</p>
+						{editMode && (
+							<div className='form-actions'>
+								<Button type='submit' disabled={isLoading}>
+									{isLoading ? 'Đang cập nhật...' : 'Cập nhật'}
+								</Button>
+							</div>
 						)}
 					</div>
 
-					<div className='form-group'>
-						<label>Nội dung giới thiệu:</label>
-						{editMode ? (
-							<textarea
-								className='form-textarea'
-								value={companyData.intro_text ?? companyInfo.intro_text ?? ''}
-								onChange={e => handleInputChange('intro_text', e.target.value)}
-								placeholder='Nhập nội dung giới thiệu'
-								rows={4}
-							/>
-						) : (
-							<p className='form-value'>
-								{companyInfo.intro_text || 'Chưa có thông tin'}
-							</p>
+					<div className='company-form-right'>
+						<div className='company-stats'>
+							<h3>📊 Thống kê công ty</h3>
+							<div className='stats-grid'>
+								<div className='stat-item'>
+									<div className='stat-value'>
+										{companyInfo.COUNT_CUSTOMER || 0}
+									</div>
+									<div className='stat-label'>Khách hàng</div>
+								</div>
+								<div className='stat-item'>
+									<div className='stat-value'>
+										{companyInfo.COUNT_CUSTOMER_SATISFY || 0}%
+									</div>
+									<div className='stat-label'>Hài lòng</div>
+								</div>
+								<div className='stat-item'>
+									<div className='stat-value'>
+										{companyInfo.COUNT_QUANLITY || 0}%
+									</div>
+									<div className='stat-label'>Chất lượng</div>
+								</div>
+							</div>
+						</div>
+
+						{editMode && (
+							<div className='stats-edit'>
+								<h4>Cập nhật thống kê</h4>
+								<div className='form-group'>
+									<label>Số lượng khách hàng:</label>
+									<Input
+										type='number'
+										value={String(
+											companyData.COUNT_CUSTOMER ??
+												companyInfo.COUNT_CUSTOMER ??
+												0,
+										)}
+										onChange={e =>
+											handleInputChange(
+												'COUNT_CUSTOMER',
+												parseInt(e.target.value) || 0,
+											)
+										}
+										placeholder='Nhập số lượng khách hàng'
+									/>
+								</div>
+
+								<div className='form-group'>
+									<label>% Khách hàng hài lòng:</label>
+									<Input
+										type='number'
+										value={String(
+											companyData.COUNT_CUSTOMER_SATISFY ??
+												companyInfo.COUNT_CUSTOMER_SATISFY ??
+												0,
+										)}
+										onChange={e =>
+											handleInputChange(
+												'COUNT_CUSTOMER_SATISFY',
+												parseInt(e.target.value) || 0,
+											)
+										}
+										placeholder='Nhập % khách hàng hài lòng'
+									/>
+								</div>
+
+								<div className='form-group'>
+									<label>Chất lượng (%):</label>
+									<Input
+										type='number'
+										value={String(
+											companyData.COUNT_QUANLITY ??
+												companyInfo.COUNT_QUANLITY ??
+												0,
+										)}
+										onChange={e =>
+											handleInputChange(
+												'COUNT_QUANLITY',
+												parseInt(e.target.value) || 0,
+											)
+										}
+										placeholder='Nhập % chất lượng'
+									/>
+								</div>
+							</div>
 						)}
 					</div>
-
-					{/* Statistics */}
-					<div className='form-row'>
-						<div className='form-group'>
-							<label>Số lượng khách hàng:</label>
-							{editMode ? (
-								<Input
-									type='number'
-									value={String(
-										companyData.COUNT_CUSTOMER ??
-											companyInfo.COUNT_CUSTOMER ??
-											0,
-									)}
-									onChange={e =>
-										handleInputChange(
-											'COUNT_CUSTOMER',
-											parseInt(e.target.value) || 0,
-										)
-									}
-									placeholder='Nhập số lượng khách hàng'
-								/>
-							) : (
-								<p className='form-value'>{companyInfo.COUNT_CUSTOMER || 0}</p>
-							)}
-						</div>
-
-						<div className='form-group'>
-							<label>% Khách hàng hài lòng:</label>
-							{editMode ? (
-								<Input
-									type='number'
-									value={String(
-										companyData.COUNT_CUSTOMER_SATISFY ??
-											companyInfo.COUNT_CUSTOMER_SATISFY ??
-											0,
-									)}
-									onChange={e =>
-										handleInputChange(
-											'COUNT_CUSTOMER_SATISFY',
-											parseInt(e.target.value) || 0,
-										)
-									}
-									placeholder='Nhập % khách hàng hài lòng'
-								/>
-							) : (
-								<p className='form-value'>
-									{companyInfo.COUNT_CUSTOMER_SATISFY || 0}%
-								</p>
-							)}
-						</div>
-
-						<div className='form-group'>
-							<label>Chất lượng (%):</label>
-							{editMode ? (
-								<Input
-									type='number'
-									value={String(
-										companyData.COUNT_QUANLITY ??
-											companyInfo.COUNT_QUANLITY ??
-											0,
-									)}
-									onChange={e =>
-										handleInputChange(
-											'COUNT_QUANLITY',
-											parseInt(e.target.value) || 0,
-										)
-									}
-									placeholder='Nhập % chất lượng'
-								/>
-							) : (
-								<p className='form-value'>{companyInfo.COUNT_QUANLITY || 0}%</p>
-							)}
-						</div>
-					</div>
-
-					{editMode && (
-						<div className='form-actions'>
-							<Button type='submit' disabled={isLoading}>
-								{isLoading ? 'Đang cập nhật...' : 'Cập nhật'}
-							</Button>
-						</div>
-					)}
 				</form>
 			</section>
 

@@ -7,6 +7,7 @@ import {
 	ShoppingCartOutlined,
 	SettingOutlined,
 	InfoCircleOutlined,
+	HomeOutlined,
 } from '@ant-design/icons';
 
 interface SidebarProps {
@@ -33,8 +34,8 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 		},
 		{
 			path: '/admin/company',
-			icon: <ShoppingCartOutlined />,
-			label: 'Company',
+			icon: <HomeOutlined />,
+			label: 'Công ty',
 		},
 	];
 
