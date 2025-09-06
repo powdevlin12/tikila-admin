@@ -1,0 +1,79 @@
+.register-container {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	padding: 20px;
+}
+
+.register-card {
+	width: 100%;
+	max-width: 450px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.register-header {
+	text-align: center;
+	margin-bottom: 32px;
+}
+
+.register-title {
+	color: #1890ff !important;
+	margin-bottom: 8px !important;
+}
+
+.register-form {
+	width: 100%;
+}
+
+.register-button {
+	height: 48px;
+	font-size: 16px;
+	font-weight: 500;
+	border-radius: 6px;
+	margin-top: 16px;
+}
+
+.register-footer {
+	text-align: center;
+	margin-top: 24px;
+}
+
+.login-link {
+	padding: 0 !important;
+	font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+	.register-container {
+		padding: 16px;
+	}
+
+	.register-card {
+		margin: 0;
+		max-width: 100%;
+	}
+}
+
+/* Form item styles */
+.ant-form-item-label > label {
+	font-weight: 500;
+	color: #262626;
+}
+
+.ant-input-affix-wrapper,
+.ant-picker {
+	border-radius: 6px;
+}
+
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused,
+.ant-picker:focus,
+.ant-picker-focused {
+	border-color: #1890ff;
+	box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
