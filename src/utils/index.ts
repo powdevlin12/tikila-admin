@@ -1,4 +1,5 @@
 // Utility functions for admin panel
+export * from './errorHandler';
 
 export const formatDate = (date: string | Date): string => {
 	const d = new Date(date);

@@ -16,6 +16,12 @@ apiClient.interceptors.request.use(
 		if (token) {
 			config.headers.Authorization = `Bearer ${token}`;
 		}
+
+		// Nếu data là FormData, xóa Content-Type để browser tự set
+		if (config.data instanceof FormData) {
+			delete config.headers['Content-Type'];
+		}
+
 		return config;
 	},
 	error => {

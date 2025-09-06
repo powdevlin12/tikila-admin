@@ -9,6 +9,7 @@ import { Dashboard, Users, Products, Orders } from '../pages';
 import { Login, Register } from '../pages/login';
 import { ProtectedRoute } from '../components';
 import MainLayout from '../layouts/MainLayout';
+import { Company } from '../pages/company/Company';
 
 const AppRouter: React.FC = () => {
 	return (
@@ -50,11 +51,11 @@ const AppRouter: React.FC = () => {
 					}
 				/>
 				<Route
-					path='/admin/orders'
+					path='/admin/company'
 					element={
 						<ProtectedRoute>
 							<MainLayout>
-								<Orders />
+								<Company />
 							</MainLayout>
 						</ProtectedRoute>
 					}

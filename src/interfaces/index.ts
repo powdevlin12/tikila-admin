@@ -1,5 +1,6 @@
 // Common interfaces for admin panel
 export * from './auth';
+export * from './company';
 
 export interface User {
 	id: string;

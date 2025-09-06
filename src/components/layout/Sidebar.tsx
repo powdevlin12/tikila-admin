@@ -31,9 +31,9 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 			label: 'Products',
 		},
 		{
-			path: '/admin/orders',
+			path: '/admin/company',
 			icon: <ShoppingCartOutlined />,
-			label: 'Orders',
+			label: 'Company',
 		},
 	];
 
