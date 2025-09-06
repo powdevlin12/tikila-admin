@@ -1,4 +1,5 @@
 import { apiPut, apiPost } from './mutations';
+import apiClient from './api';
 import type { CompanyUpdateRequest, Service } from '../interfaces/company';
 
 export class CompanyService {
@@ -66,5 +67,36 @@ export class CompanyService {
 				revalidateKeys: ['/company/services'],
 			},
 		);
+	}
+
+	// Lấy nội dung giới thiệu chi tiết
+	static async getIntroDetail(): Promise<{
+		success: boolean;
+		message: string;
+		data: { intro_text_detail: string };
+	}> {
+		return apiClient.get('/company/intro-detail');
+	}
+
+	// Cập nhật nội dung giới thiệu chi tiết
+	static async updateIntroDetail(intro_text_detail: string) {
+		return apiPut<{ success: boolean; message: string }>(
+			'/company/intro-detail',
+			{ intro_text_detail },
+			{
+				revalidateKeys: ['/company/intro-detail'],
+			},
+		);
+	}
+
+	// Upload ảnh cho editor
+	static async uploadEditorImage(file: File): Promise<{
+		url: Array<{ url: string; type: string }>;
+		message: string;
+	}> {
+		const formData = new FormData();
+		formData.append('image', file);
+
+		return apiClient.post('/medias/upload-image', formData);
 	}
 }

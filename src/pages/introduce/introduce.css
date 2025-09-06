@@ -1,0 +1,112 @@
+.introduce-editor {
+	padding: 20px;
+	max-width: 100%;
+	margin: 0 auto;
+}
+
+.editor-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+	padding-bottom: 15px;
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.editor-header h2 {
+	margin: 0;
+	color: #333;
+	font-size: 24px;
+}
+
+.save-btn {
+	background-color: #007bff;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background-color 0.3s;
+}
+
+.save-btn:hover {
+	background-color: #0056b3;
+}
+
+.save-btn:disabled {
+	background-color: #6c757d;
+	cursor: not-allowed;
+}
+
+.message {
+	padding: 10px 15px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.message.success {
+	background-color: #d4edda;
+	border: 1px solid #c3e6cb;
+	color: #155724;
+}
+
+.message.error {
+	background-color: #f8d7da;
+	border: 1px solid #f5c6cb;
+	color: #721c24;
+}
+
+.editor-container {
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.editor-container .ql-editor {
+	min-height: 400px;
+	font-size: 16px;
+	line-height: 1.6;
+}
+
+.editor-container .ql-toolbar {
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+}
+
+.editor-container .ql-container {
+	border-bottom-left-radius: 8px;
+	border-bottom-right-radius: 8px;
+}
+
+/* Upload loading overlay */
+.editor-container.uploading {
+	position: relative;
+}
+
+.editor-container.uploading::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(255, 255, 255, 0.8);
+	z-index: 10;
+	border-radius: 8px;
+}
+
+.editor-container.uploading::after {
+	content: 'Đang tải ảnh lên...';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: #007bff;
+	color: white;
+	padding: 10px 20px;
+	border-radius: 4px;
+	z-index: 11;
+	font-size: 14px;
+}

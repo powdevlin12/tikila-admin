@@ -6,6 +6,7 @@ import {
 	ShoppingOutlined,
 	ShoppingCartOutlined,
 	SettingOutlined,
+	InfoCircleOutlined,
 } from '@ant-design/icons';
 
 interface SidebarProps {
@@ -26,9 +27,9 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 			label: 'Liên hệ',
 		},
 		{
-			path: '/admin/products',
-			icon: <ShoppingOutlined />,
-			label: 'Products',
+			path: '/admin/introduce',
+			icon: <InfoCircleOutlined />,
+			label: 'Giới thiệu',
 		},
 		{
 			path: '/admin/company',
@@ -42,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 			<div className='sidebar-header'>
 				<div className='logo'>
 					<img src='/logo.png' alt='Logo' className='logo-img' />
-					<h2>Tikila Admin</h2>
+					<h2>Tikila</h2>
 				</div>
 			</div>
 

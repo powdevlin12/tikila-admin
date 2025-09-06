@@ -10,6 +10,7 @@ import { Login, Register } from '../pages/login';
 import { ProtectedRoute } from '../components';
 import MainLayout from '../layouts/MainLayout';
 import { Company } from '../pages/company/Company';
+import Introduce from '../pages/introduce';
 
 const AppRouter: React.FC = () => {
 	return (
@@ -46,6 +47,16 @@ const AppRouter: React.FC = () => {
 						<ProtectedRoute>
 							<MainLayout>
 								<Products />
+							</MainLayout>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path='/admin/introduce'
+					element={
+						<ProtectedRoute>
+							<MainLayout>
+								<Introduce />
 							</MainLayout>
 						</ProtectedRoute>
 					}
