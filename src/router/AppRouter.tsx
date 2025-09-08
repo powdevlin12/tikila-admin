@@ -26,7 +26,7 @@ const AppRouter: React.FC = () => {
 					element={
 						<ProtectedRoute>
 							<MainLayout>
-								<Dashboard />
+								<Company />
 							</MainLayout>
 						</ProtectedRoute>
 					}
@@ -73,7 +73,7 @@ const AppRouter: React.FC = () => {
 				/>
 
 				{/* Default redirect */}
-				<Route path='/' element={<Navigate to='/admin' replace />} />
+				<Route path='/' element={<Navigate to='/admin/company' replace />} />
 			</Routes>
 		</Router>
 	);

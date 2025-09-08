@@ -1,6 +1,10 @@
 import { apiPut, apiPost } from './mutations';
 import apiClient from './api';
-import type { CompanyUpdateRequest, Service } from '../interfaces/company';
+import type {
+	CompanyUpdateRequest,
+	Service,
+	CompanyContactUpdateRequest,
+} from '../interfaces/company';
 
 export class CompanyService {
 	// Cập nhật thông tin công ty
@@ -98,5 +102,16 @@ export class CompanyService {
 		formData.append('image', file);
 
 		return apiClient.post('/medias/upload-image', formData);
+	}
+
+	// Cập nhật thông tin liên hệ
+	static async updateContactInfo(data: CompanyContactUpdateRequest) {
+		return apiPut<{ success: boolean; message: string }>(
+			'/company/contact',
+			data,
+			{
+				revalidateKeys: ['/company/contact'],
+			},
+		);
 	}
 }

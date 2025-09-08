@@ -19,14 +19,10 @@ export interface CompanyInfo {
 export interface CompanyContact {
 	id?: number;
 	phone?: string;
-	address?: string;
-	email?: string;
 	facebook_link?: string;
 	zalo_link?: string;
 	tiktok_link?: string;
-	website?: string;
 	created_at?: string;
-	updated_at?: string;
 }
 
 export interface Service {
@@ -59,4 +55,11 @@ export interface CompanyUpdateRequest {
 	COUNT_CUSTOMER?: number;
 	COUNT_CUSTOMER_SATISFY?: number;
 	COUNT_QUANLITY?: number;
+}
+
+export interface CompanyContactUpdateRequest {
+	phone?: string;
+	facebook_link?: string;
+	zalo_link?: string;
+	tiktok_link?: string;
 }

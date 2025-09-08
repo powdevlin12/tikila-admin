@@ -475,3 +475,43 @@ html .company-page textarea:focus {
 		grid-template-columns: 1fr;
 	}
 }
+
+/* Contact Form Styles */
+.contact-form {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+.contact-form .form-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px;
+}
+
+.contact-form .form-group {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.contact-form .form-group label {
+	font-weight: 600;
+	color: #2c3e50;
+	font-size: 14px;
+}
+
+.contact-form .form-actions {
+	display: flex;
+	gap: 12px;
+	justify-content: flex-end;
+	margin-top: 20px;
+	padding-top: 20px;
+	border-top: 1px solid #e9ecef;
+}
+
+@media (max-width: 768px) {
+	.contact-form .form-row {
+		grid-template-columns: 1fr;
+	}
+}

@@ -4,7 +4,6 @@ import {
 	DashboardOutlined,
 	UserOutlined,
 	ShoppingOutlined,
-	ShoppingCartOutlined,
 	SettingOutlined,
 	InfoCircleOutlined,
 	HomeOutlined,
@@ -17,10 +16,9 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 	const menuItems = [
 		{
-			path: '/admin',
-			icon: <DashboardOutlined />,
-			label: 'Dashboard',
-			exact: true,
+			path: '/admin/company',
+			icon: <HomeOutlined />,
+			label: 'Công ty',
 		},
 		{
 			path: '/admin/contacts',
@@ -28,14 +26,21 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 			label: 'Liên hệ',
 		},
 		{
+			path: '/admin/products',
+			icon: <ShoppingOutlined />,
+			label: 'Sản phẩm',
+		},
+		{
 			path: '/admin/introduce',
 			icon: <InfoCircleOutlined />,
 			label: 'Giới thiệu',
 		},
+
 		{
-			path: '/admin/company',
-			icon: <HomeOutlined />,
-			label: 'Công ty',
+			path: '/admin',
+			icon: <DashboardOutlined />,
+			label: 'Dashboard',
+			exact: true,
 		},
 	];
 

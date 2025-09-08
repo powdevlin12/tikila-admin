@@ -8,6 +8,7 @@ import type {
 	CompanyContact,
 	Service,
 	CompanyUpdateRequest,
+	CompanyContactUpdateRequest,
 } from '../../interfaces/company';
 import { Button, Input, Modal } from '../../components/ui';
 import './Company.styles.css';
@@ -22,6 +23,10 @@ export const Company = () => {
 	});
 	const [editMode, setEditMode] = useState(false);
 	const [companyData, setCompanyData] = useState<CompanyUpdateRequest>({});
+	const [editContactMode, setEditContactMode] = useState(false);
+	const [contactData, setContactData] = useState<CompanyContactUpdateRequest>(
+		{},
+	);
 
 	// Auth info
 	const { isAuthenticated, token, user } = useAuthStore();
@@ -158,6 +163,45 @@ export const Company = () => {
 			...prev,
 			[field]: value,
 		}));
+	};
+
+	// Handle contact input change
+	const handleContactInputChange = (
+		field: keyof CompanyContactUpdateRequest,
+		value: string,
+	) => {
+		setContactData(prev => ({
+			...prev,
+			[field]: value,
+		}));
+	};
+
+	// Handle update contact info
+	const handleUpdateContactInfo = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!contactData || Object.keys(contactData).length === 0) {
+			alert('Không có dữ liệu để cập nhật');
+			return;
+		}
+
+		// Check authentication
+		if (!checkAuthentication(isAuthenticated, token)) {
+			return;
+		}
+
+		setIsLoading(true);
+		try {
+			await CompanyService.updateContactInfo(contactData);
+			alert('Cập nhật thông tin liên hệ thành công!');
+			// Refresh contact data
+			window.location.reload(); // Simple refresh, you can improve this with proper state management
+			setEditContactMode(false);
+			setContactData({});
+		} catch (error: unknown) {
+			handleApiError(error, 'Lỗi khi cập nhật thông tin liên hệ');
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	if (!companyInfo) {
@@ -485,7 +529,7 @@ export const Company = () => {
 			</section>
 
 			{/* Services Section */}
-			<section className='company-section'>
+			{/* <section className='company-section'>
 				<div className='section-header'>
 					<h2>Dịch vụ</h2>
 					<Button onClick={() => setShowServiceModal(true)}>
@@ -508,41 +552,113 @@ export const Company = () => {
 						</div>
 					))}
 				</div>
-			</section>
+			</section> */}
 
 			{/* Contact Info Section */}
 			{contactInfo && (
 				<section className='company-section'>
-					<h2>Thông tin liên hệ</h2>
-					<div className='contact-info'>
-						<p>
-							<strong>Điện thoại:</strong>{' '}
-							{contactInfo.phone || 'Chưa có thông tin'}
-						</p>
-						<p>
-							<strong>Email:</strong> {contactInfo.email || 'Chưa có thông tin'}
-						</p>
-						<p>
-							<strong>Địa chỉ:</strong>{' '}
-							{contactInfo.address || 'Chưa có thông tin'}
-						</p>
-						<p>
-							<strong>Facebook:</strong>{' '}
-							{contactInfo.facebook_link || 'Chưa có thông tin'}
-						</p>
-						<p>
-							<strong>Zalo:</strong>{' '}
-							{contactInfo.zalo_link || 'Chưa có thông tin'}
-						</p>
-						<p>
-							<strong>TikTok:</strong>{' '}
-							{contactInfo.tiktok_link || 'Chưa có thông tin'}
-						</p>
-						<p>
-							<strong>Website:</strong>{' '}
-							{contactInfo.website || 'Chưa có thông tin'}
-						</p>
+					<div className='section-header'>
+						<h2>Thông tin liên hệ</h2>
+						<Button
+							onClick={() => setEditContactMode(!editContactMode)}
+							variant={editContactMode ? 'secondary' : 'primary'}
+						>
+							{editContactMode ? 'Hủy' : 'Chỉnh sửa'}
+						</Button>
 					</div>
+
+					{editContactMode ? (
+						<form onSubmit={handleUpdateContactInfo} className='contact-form'>
+							<div className='form-row'>
+								<div className='form-group'>
+									<label>Điện thoại:</label>
+									<Input
+										value={contactData.phone ?? contactInfo.phone ?? ''}
+										onChange={e =>
+											handleContactInputChange('phone', e.target.value)
+										}
+										placeholder='Nhập số điện thoại'
+									/>
+								</div>
+								<div className='form-group'>
+									<label>Facebook:</label>
+									<Input
+										value={
+											contactData.facebook_link ??
+											contactInfo.facebook_link ??
+											''
+										}
+										onChange={e =>
+											handleContactInputChange('facebook_link', e.target.value)
+										}
+										placeholder='Nhập link Facebook'
+									/>
+								</div>
+							</div>
+
+							<div className='form-row'>
+								<div className='form-group'>
+									<label>Zalo:</label>
+									<Input
+										value={contactData.zalo_link ?? contactInfo.zalo_link ?? ''}
+										onChange={e =>
+											handleContactInputChange('zalo_link', e.target.value)
+										}
+										placeholder='Nhập link Zalo'
+									/>
+								</div>
+								<div className='form-group'>
+									<label>TikTok:</label>
+									<Input
+										value={
+											contactData.tiktok_link ?? contactInfo.tiktok_link ?? ''
+										}
+										onChange={e =>
+											handleContactInputChange('tiktok_link', e.target.value)
+										}
+										placeholder='Nhập link TikTok'
+									/>
+								</div>
+							</div>
+
+							<div className='form-actions'>
+								<Button
+									type='button'
+									variant='secondary'
+									onClick={() => {
+										setEditContactMode(false);
+										setContactData({});
+									}}
+								>
+									Hủy
+								</Button>
+								<Button type='submit' disabled={isLoading}>
+									{isLoading
+										? 'Đang cập nhật...'
+										: 'Cập nhật thông tin liên hệ'}
+								</Button>
+							</div>
+						</form>
+					) : (
+						<div className='contact-info'>
+							<p>
+								<strong>Điện thoại:</strong>{' '}
+								{contactInfo.phone || 'Chưa có thông tin'}
+							</p>
+							<p>
+								<strong>Facebook:</strong>{' '}
+								{contactInfo.facebook_link || 'Chưa có thông tin'}
+							</p>
+							<p>
+								<strong>Zalo:</strong>{' '}
+								{contactInfo.zalo_link || 'Chưa có thông tin'}
+							</p>
+							<p>
+								<strong>TikTok:</strong>{' '}
+								{contactInfo.tiktok_link || 'Chưa có thông tin'}
+							</p>
+						</div>
+					)}
 				</section>
 			)}
 

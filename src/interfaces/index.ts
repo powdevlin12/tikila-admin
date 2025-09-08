@@ -2,6 +2,7 @@
 export * from './auth';
 export * from './company';
 export * from './contact';
+export * from './product';
 
 export interface User {
 	id: string;
@@ -15,13 +16,12 @@ export interface User {
 
 export interface Product {
 	id: string;
-	name: string;
+	title: string;
 	description: string;
 	price: number;
-	category: string;
-	status: 'active' | 'inactive';
-	imageUrl?: string;
-	createdAt: string;
+	image_url?: string;
+	is_delete: number;
+	created_at: string;
 	updatedAt: string;
 }
 
