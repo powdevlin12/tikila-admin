@@ -5,7 +5,7 @@ import {
 	Route,
 	Navigate,
 } from 'react-router-dom';
-import { Dashboard, Users, Products, Orders } from '../pages';
+import { Dashboard, Users, Products, Orders, Footer } from '../pages';
 import { Login, Register } from '../pages/login';
 import { ProtectedRoute } from '../components';
 import MainLayout from '../layouts/MainLayout';
@@ -58,6 +58,14 @@ const AppRouter: React.FC = () => {
 							<MainLayout>
 								<Introduce />
 							</MainLayout>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path='/admin/footer'
+					element={
+						<ProtectedRoute>
+							<Footer />
 						</ProtectedRoute>
 					}
 				/>

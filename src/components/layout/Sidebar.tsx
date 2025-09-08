@@ -31,11 +31,15 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 			label: 'Sản phẩm',
 		},
 		{
+			path: '/admin/footer',
+			icon: <SettingOutlined />,
+			label: 'Footer',
+		},
+		{
 			path: '/admin/introduce',
 			icon: <InfoCircleOutlined />,
 			label: 'Giới thiệu',
 		},
-
 		{
 			path: '/admin',
 			icon: <DashboardOutlined />,
