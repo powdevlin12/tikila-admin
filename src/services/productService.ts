@@ -24,7 +24,7 @@ export class ProductService {
 		data: ProductWithImage,
 	): Promise<Product> {
 		const formData = new FormData();
-		formData.append('title', data.name); // Backend expects 'title' not 'name'
+		formData.append('title', data.title); // Fixed: use correct field name
 		formData.append('description', data.description);
 		if (data.price) formData.append('price', data.price.toString());
 		if (data.company_id)
@@ -44,8 +44,9 @@ export class ProductService {
 	static async createProduct(data: ProductCreateRequest): Promise<Product> {
 		// Transform frontend field names to backend field names
 		const backendData = {
-			title: data.name, // Backend expects 'title'
+			title: data.title, // Fixed: use correct field name
 			description: data.description,
+			detail_info: data.detail_info,
 			image_url: data.image_url,
 			price: data.price,
 		};
@@ -64,8 +65,9 @@ export class ProductService {
 	): Promise<Product> {
 		// Transform frontend field names to backend field names
 		const backendData = {
-			title: data.name, // Backend expects 'title'
+			title: data.title, // Fixed: use correct field name
 			description: data.description,
+			detail_info: data.detail_info,
 			image_url: data.image_url,
 			// Note: Backend doesn't support status update, only soft delete via delete endpoint
 		};
@@ -84,12 +86,12 @@ export class ProductService {
 	): Promise<Product> {
 		const formData = new FormData();
 
-		if (data.name) formData.append('title', data.name); // Backend expects 'title'
+		if (data.title) formData.append('title', data.title); // Fixed: use correct field name
 		if (data.description) formData.append('description', data.description);
+		if (data.detail_info) formData.append('detail_info', data.detail_info);
 		if (data.price) formData.append('price', data.price.toString());
 		if (data.company_id)
 			formData.append('company_id', data.company_id.toString());
-		if (data.detail_info) formData.append('detail_info', data.detail_info);
 		if (data.image) formData.append('image', data.image);
 
 		const response = await apiClient.put<Product>(`/products/${id}`, formData, {
@@ -103,5 +105,16 @@ export class ProductService {
 	// Delete product (soft delete)
 	static async deleteProduct(id: string): Promise<void> {
 		await apiClient.delete(`/products/${id}`);
+	}
+
+	// Upload ảnh cho editor
+	static async uploadEditorImage(file: File): Promise<{
+		url: Array<{ url: string; type: string }>;
+		message: string;
+	}> {
+		const formData = new FormData();
+		formData.append('image', file);
+
+		return apiClient.post('/medias/upload-image', formData);
 	}
 }

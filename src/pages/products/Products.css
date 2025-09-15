@@ -48,6 +48,36 @@
 	color: #ff4d4f;
 }
 
+/* Products Rich Text Editor Styles */
+.product-editor {
+	margin: 16px 0;
+}
+
+.product-editor .ql-editor {
+	min-height: 200px;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.product-editor .ql-toolbar {
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+	border-radius: 4px 4px 0 0;
+}
+
+.product-editor .ql-container {
+	border-bottom: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+	border-radius: 0 0 4px 4px;
+}
+
+.product-editor.uploading {
+	opacity: 0.7;
+	pointer-events: none;
+}
+
 .upload-area {
 	border: 2px dashed #d9d9d9;
 	border-radius: 6px;

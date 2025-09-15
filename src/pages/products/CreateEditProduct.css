@@ -1,0 +1,162 @@
+/* CreateEditProduct.css */
+.create-edit-product-page {
+	padding: 24px;
+	background-color: #f5f5f5;
+	min-height: 100vh;
+	width: calc(100vw - 320px);
+}
+
+.create-edit-product-page .ant-card {
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Upload area styling */
+.upload-area {
+	border: 2px dashed #d9d9d9;
+	border-radius: 8px;
+	padding: 40px 20px;
+	text-align: center;
+	cursor: pointer;
+	transition: border-color 0.3s ease;
+	background-color: #fafafa;
+}
+
+.upload-area:hover {
+	border-color: #1890ff;
+	background-color: #f0f8ff;
+}
+
+.upload-area:hover .anticon {
+	color: #1890ff !important;
+}
+
+/* Upload preview styling */
+.upload-preview {
+	margin-top: 16px;
+	text-align: center;
+}
+
+.upload-preview img {
+	max-width: 200px;
+	max-height: 200px;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	object-fit: cover;
+}
+
+/* Rich text editor styling */
+.product-editor {
+	border: 1px solid #d9d9d9;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.product-editor.uploading {
+	pointer-events: none;
+	opacity: 0.7;
+}
+
+.product-editor .ql-toolbar {
+	border-bottom: 1px solid #d9d9d9;
+	background-color: #fafafa;
+}
+
+.product-editor .ql-container {
+	min-height: 200px;
+	font-size: 14px;
+}
+
+.product-editor .ql-editor {
+	min-height: 200px;
+	padding: 12px 15px;
+}
+
+.product-editor .ql-editor.ql-blank::before {
+	color: #bfbfbf;
+	font-style: normal;
+}
+
+/* Form styling improvements */
+.create-edit-product-page .ant-form-item-label > label {
+	font-weight: 600;
+	color: #262626;
+}
+
+.create-edit-product-page .ant-input,
+.create-edit-product-page .ant-input-number,
+.create-edit-product-page .ant-select-selector {
+	border-radius: 6px;
+}
+
+/* Button styling */
+.create-edit-product-page .ant-btn-primary {
+	background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+	border: none;
+	border-radius: 6px;
+	font-weight: 500;
+}
+
+.create-edit-product-page .ant-btn-primary:hover {
+	background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+/* Breadcrumb styling */
+.create-edit-product-page .ant-breadcrumb {
+	margin-bottom: 8px;
+}
+
+.create-edit-product-page .ant-breadcrumb-link {
+	color: #1890ff;
+}
+
+/* Loading state */
+.loading {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 60px 20px;
+	text-align: center;
+}
+
+.loading h3 {
+	margin-top: 20px;
+	color: #8c8c8c;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+	.create-edit-product-page {
+		padding: 16px;
+	}
+
+	.upload-area {
+		padding: 30px 15px;
+	}
+
+	.upload-preview img {
+		max-width: 150px;
+		max-height: 150px;
+	}
+
+	.product-editor .ql-container {
+		min-height: 150px;
+	}
+
+	.product-editor .ql-editor {
+		min-height: 150px;
+	}
+}
+
+/* Animation for smooth transitions */
+.create-edit-product-page * {
+	transition: all 0.2s ease-in-out;
+}
+
+/* Success/Error message styling */
+.ant-message {
+	z-index: 9999;
+}

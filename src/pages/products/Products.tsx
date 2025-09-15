@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
 	Table,
 	Button,
-	Modal,
-	Form,
-	Input,
-	InputNumber,
 	Space,
 	Popconfirm,
 	Tag,
@@ -21,8 +18,8 @@ import {
 	DeleteOutlined,
 	UploadOutlined,
 	EyeOutlined,
-	InboxOutlined,
 } from '@ant-design/icons';
+import './products.css';
 import { MainLayout } from '../../layouts';
 import { useApi } from '../../services/hooks';
 import { ProductService } from '../../services';
@@ -31,15 +28,9 @@ import type { Product } from '../../interfaces';
 import { checkAuthentication, handleApiError } from '../../utils';
 import './Products.css';
 
-const { TextArea } = Input;
-
 const Products: React.FC = () => {
+	const navigate = useNavigate();
 	const [isLoading, setIsLoading] = useState(false);
-	const [showProductModal, setShowProductModal] = useState(false);
-	const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-	const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-	const [previewImage, setPreviewImage] = useState<string>('');
-	const [form] = Form.useForm();
 
 	// Auth info
 	const { isAuthenticated, token } = useAuthStore();
@@ -47,81 +38,6 @@ const Products: React.FC = () => {
 	// Fetch data
 	const { data: products, mutate: mutateProducts } =
 		useApi<Product[]>('/products');
-
-	// Handle create/update product
-	const handleSubmitProduct = async (values: {
-		name: string;
-		description: string;
-		price: number;
-		image_url?: string;
-		status?: string;
-	}) => {
-		if (!checkAuthentication(isAuthenticated, token)) {
-			return;
-		}
-
-		setIsLoading(true);
-		try {
-			if (editingProduct) {
-				// Update existing product
-				if (uploadedFile) {
-					// Update with image
-					await ProductService.updateProductWithImage(editingProduct.id, {
-						name: values.name,
-						description: values.description,
-						price: values.price,
-						image: uploadedFile,
-					});
-				} else {
-					// Update without image
-					const productData = {
-						name: values.name,
-						description: values.description,
-						price: values.price,
-						image_url: values.image_url || '',
-						// Note: Status is handled via soft delete, not update
-					};
-					await ProductService.updateProduct(editingProduct.id, productData);
-				}
-				message.success('Cập nhật sản phẩm thành công!');
-			} else {
-				// Create new product
-				if (uploadedFile) {
-					// Create with image upload
-					await ProductService.createProductWithImage({
-						name: values.name,
-						description: values.description,
-						price: values.price,
-						image: uploadedFile,
-					});
-				} else {
-					// Create with image URL only
-					const productData = {
-						name: values.name,
-						description: values.description,
-						price: values.price,
-						image_url: values.image_url || '',
-					};
-					await ProductService.createProduct(productData);
-				}
-				message.success('Tạo sản phẩm thành công!');
-			}
-
-			mutateProducts();
-			setShowProductModal(false);
-			setEditingProduct(null);
-			setUploadedFile(null);
-			setPreviewImage('');
-			form.resetFields();
-		} catch (error: unknown) {
-			handleApiError(
-				error,
-				editingProduct ? 'Lỗi khi cập nhật sản phẩm' : 'Lỗi khi tạo sản phẩm',
-			);
-		} finally {
-			setIsLoading(false);
-		}
-	};
 
 	// Handle delete product
 	const handleDeleteProduct = async (product: Product) => {
@@ -161,47 +77,12 @@ const Products: React.FC = () => {
 
 	// Open edit modal
 	const handleEditProduct = (product: Product) => {
-		setEditingProduct(product);
-		setUploadedFile(null);
-		setPreviewImage('');
-		form.setFieldsValue({
-			name: product.title, // Backend uses 'title'
-			description: product.description,
-			// price: product.price,
-			image_url: product.image_url,
-			is_delete: product.is_delete,
-			// Note: Status is controlled via is_delete field, not editable
-		});
-		setShowProductModal(true);
+		navigate(`/admin/products/edit/${product.id}`);
 	};
 
 	// Open create modal
 	const handleCreateProduct = () => {
-		setEditingProduct(null);
-		setUploadedFile(null);
-		setPreviewImage('');
-		form.resetFields();
-		setShowProductModal(true);
-	};
-
-	// Handle file upload
-	const handleFileUpload = (file: File) => {
-		setUploadedFile(file);
-
-		// Create preview URL
-		const reader = new FileReader();
-		reader.onload = e => {
-			setPreviewImage(e.target?.result as string);
-		};
-		reader.readAsDataURL(file);
-
-		return false; // Prevent automatic upload
-	};
-
-	// Remove uploaded file
-	const handleRemoveFile = () => {
-		setUploadedFile(null);
-		setPreviewImage('');
+		navigate('/admin/products/create');
 	};
 
 	// Table columns
@@ -416,135 +297,6 @@ const Products: React.FC = () => {
 					scroll={{ x: 800 }}
 				/>
 			</Card>
-
-			{/* Product Modal */}
-			<Modal
-				title={editingProduct ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
-				open={showProductModal}
-				onCancel={() => {
-					setShowProductModal(false);
-					setEditingProduct(null);
-					setUploadedFile(null);
-					setPreviewImage('');
-					form.resetFields();
-				}}
-				footer={null}
-				width={600}
-			>
-				<Form
-					form={form}
-					layout='vertical'
-					onFinish={handleSubmitProduct}
-					style={{ marginTop: 16 }}
-				>
-					<Form.Item
-						name='name'
-						label='Tên sản phẩm'
-						rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]}
-					>
-						<Input placeholder='Nhập tên sản phẩm' size='large' />
-					</Form.Item>
-
-					<Form.Item
-						name='description'
-						label='Mô tả'
-						rules={[
-							{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' },
-						]}
-					>
-						<TextArea rows={4} placeholder='Nhập mô tả sản phẩm' size='large' />
-					</Form.Item>
-
-					<Form.Item
-						name='price'
-						label='Giá (VNĐ)'
-						rules={[
-							{ required: true, message: 'Vui lòng nhập giá sản phẩm!' },
-							{ type: 'number', min: 0, message: 'Giá phải lớn hơn 0!' },
-						]}
-					>
-						<InputNumber
-							placeholder='Nhập giá sản phẩm'
-							style={{ width: '100%' }}
-							size='large'
-							formatter={value =>
-								`${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-							}
-							parser={value => value!.replace(/\$\s?|(,*)/g, '')}
-						/>
-					</Form.Item>
-
-					{/* Image Upload Section */}
-					<Form.Item label='Hình ảnh sản phẩm'>
-						<div>
-							<div
-								className='upload-area'
-								onClick={() => document.getElementById('file-input')?.click()}
-							>
-								<InboxOutlined style={{ fontSize: '48px', color: '#ccc' }} />
-								<p style={{ margin: '8px 0 4px' }}>
-									Click hoặc kéo thả file để upload
-								</p>
-								<p style={{ margin: 0, color: '#999' }}>
-									Hỗ trợ: JPG, PNG, GIF
-								</p>
-							</div>
-							<input
-								id='file-input'
-								type='file'
-								accept='image/*'
-								style={{ display: 'none' }}
-								onChange={e => {
-									const file = e.target.files?.[0];
-									if (file) {
-										handleFileUpload(file);
-									}
-								}}
-							/>
-							{previewImage && (
-								<div className='upload-preview'>
-									<img src={previewImage} alt='Preview' />
-									<div style={{ marginTop: '8px' }}>
-										<Button type='link' danger onClick={handleRemoveFile}>
-											Xóa ảnh
-										</Button>
-									</div>
-								</div>
-							)}
-						</div>
-					</Form.Item>
-
-					<Form.Item name='image_url' label='Hoặc nhập URL hình ảnh'>
-						<Input placeholder='Nhập URL hình ảnh (tùy chọn)' size='large' />
-					</Form.Item>
-
-					{/* Note: Status is controlled via soft delete, not editable */}
-
-					<Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-						<Space>
-							<Button
-								onClick={() => {
-									setShowProductModal(false);
-									setEditingProduct(null);
-									setUploadedFile(null);
-									setPreviewImage('');
-									form.resetFields();
-								}}
-							>
-								Hủy
-							</Button>
-							<Button
-								type='primary'
-								htmlType='submit'
-								loading={isLoading}
-								size='large'
-							>
-								{editingProduct ? 'Cập nhật' : 'Tạo mới'}
-							</Button>
-						</Space>
-					</Form.Item>
-				</Form>
-			</Modal>
 		</div>
 	);
 };

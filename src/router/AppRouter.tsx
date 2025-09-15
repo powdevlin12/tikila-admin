@@ -5,7 +5,14 @@ import {
 	Route,
 	Navigate,
 } from 'react-router-dom';
-import { Dashboard, Users, Products, Orders, Footer } from '../pages';
+import {
+	Dashboard,
+	Users,
+	Products,
+	Orders,
+	Footer,
+	CreateEditProduct,
+} from '../pages';
 import { Login, Register } from '../pages/login';
 import { ProtectedRoute } from '../components';
 import MainLayout from '../layouts/MainLayout';
@@ -48,6 +55,22 @@ const AppRouter: React.FC = () => {
 							<MainLayout>
 								<Products />
 							</MainLayout>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path='/admin/products/create'
+					element={
+						<ProtectedRoute>
+							<CreateEditProduct />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path='/admin/products/edit/:id'
+					element={
+						<ProtectedRoute>
+							<CreateEditProduct />
 						</ProtectedRoute>
 					}
 				/>
