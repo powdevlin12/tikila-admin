@@ -1,4 +1,30 @@
 import React, { useState, useMemo } from 'react';
+import {
+	Table,
+	Button,
+	Modal,
+	Form,
+	Input,
+	Select,
+	Rate,
+	Card,
+	Statistic,
+	Space,
+	message,
+	Popconfirm,
+	Tag,
+	Row,
+	Col,
+	Typography,
+	Spin,
+	Alert,
+} from 'antd';
+import {
+	PlusOutlined,
+	DeleteOutlined,
+	EyeOutlined,
+	StarFilled,
+} from '@ant-design/icons';
 import { useApi } from '../../services';
 import { StarCustomerService } from '../../services/starCustomerService';
 import { handleApiError } from '../../utils/errorHandler';
@@ -7,8 +33,9 @@ import type {
 	CreateStarCustomerPayload,
 	StarCustomerStats,
 } from '../../interfaces/starCustomer';
-import { Button, Modal } from '../../components/ui';
-import './StarCustomer.styles.css';
+
+const { Title } = Typography;
+const { TextArea } = Input;
 
 const StarCustomer: React.FC = () => {
 	const [selectedStarCustomer, setSelectedStarCustomer] =
@@ -20,14 +47,7 @@ const StarCustomer: React.FC = () => {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [sortBy, setSortBy] = useState<'date' | 'name' | 'rating'>('date');
 	const [filterByRating, setFilterByRating] = useState<number | 'all'>('all');
-
-	// Form state for adding new star customer
-	const [newStarCustomer, setNewStarCustomer] =
-		useState<CreateStarCustomerPayload>({
-			star: 5,
-			name_customer: '',
-			content: '',
-		});
+	const [form] = Form.useForm();
 
 	// Fetch star customers data
 	const {
@@ -89,25 +109,14 @@ const StarCustomer: React.FC = () => {
 	}, [starCustomers, searchTerm, sortBy, filterByRating]);
 
 	// Handle add star customer
-	const handleAddStarCustomer = async (e: React.FormEvent) => {
-		e.preventDefault();
-
-		if (!newStarCustomer.name_customer.trim()) {
-			alert('Vui lòng nhập tên khách hàng!');
-			return;
-		}
-
+	const handleAddStarCustomer = async (values: CreateStarCustomerPayload) => {
 		setIsAdding(true);
 		try {
-			const result = await StarCustomerService.addStarCustomer(newStarCustomer);
+			const result = await StarCustomerService.addStarCustomer(values);
 			console.log('Add star customer result:', result);
-			alert('Thêm đánh giá khách hàng thành công!');
+			message.success('Thêm đánh giá khách hàng thành công!');
 			setShowAddModal(false);
-			setNewStarCustomer({
-				star: 5,
-				name_customer: '',
-				content: '',
-			});
+			form.resetFields();
 			// Force refresh data
 			await mutateStarCustomers();
 		} catch (error: unknown) {
@@ -119,18 +128,10 @@ const StarCustomer: React.FC = () => {
 
 	// Handle delete star customer
 	const handleDeleteStarCustomer = async (customer: StarCustomer) => {
-		if (
-			!window.confirm(
-				`Bạn có chắc chắn muốn xóa đánh giá của ${customer.name_customer}?`,
-			)
-		) {
-			return;
-		}
-
 		setIsDeleting(true);
 		try {
 			await StarCustomerService.deleteStarCustomer(customer.id);
-			alert('Xóa đánh giá thành công!');
+			message.success('Xóa đánh giá thành công!');
 			// Force refresh data
 			await mutateStarCustomers();
 		} catch (error: unknown) {
@@ -156,297 +157,328 @@ const StarCustomer: React.FC = () => {
 		});
 	};
 
-	const renderStars = (rating: number) => {
-		return Array.from({ length: 5 }, (_, i) => (
-			<span key={i} className={`star ${i < rating ? 'filled' : ''}`}>
-				★
-			</span>
-		));
-	};
+	// Table columns configuration
+	const columns = [
+		{
+			title: 'Tên khách hàng',
+			dataIndex: 'name_customer',
+			key: 'name_customer',
+			filterable: true,
+		},
+		{
+			title: 'Đánh giá',
+			dataIndex: 'star',
+			key: 'star',
+			render: (star: number) => <Rate disabled defaultValue={star} />,
+			filters: [
+				{ text: '5 sao', value: 5 },
+				{ text: '4 sao', value: 4 },
+				{ text: '3 sao', value: 3 },
+				{ text: '2 sao', value: 2 },
+				{ text: '1 sao', value: 1 },
+			],
+		},
+		{
+			title: 'Nội dung',
+			dataIndex: 'content',
+			key: 'content',
+			render: (content: string) => (
+				<div style={{ maxWidth: 200 }}>
+					{content
+						? content.length > 50
+							? `${content.substring(0, 50)}...`
+							: content
+						: 'Không có nội dung'}
+				</div>
+			),
+		},
+		{
+			title: 'Ngày tạo',
+			dataIndex: 'created_at',
+			key: 'created_at',
+			render: (date: string) => formatDate(date),
+			sorter: (a: StarCustomer, b: StarCustomer) =>
+				new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+		},
+		{
+			title: 'Thao tác',
+			key: 'actions',
+			render: (_: unknown, record: StarCustomer) => (
+				<Space>
+					<Button
+						type='link'
+						icon={<EyeOutlined />}
+						onClick={() => handleViewDetail(record)}
+					>
+						Xem chi tiết
+					</Button>
+					<Popconfirm
+						title='Xóa đánh giá'
+						description={`Bạn có chắc chắn muốn xóa đánh giá của ${record.name_customer}?`}
+						onConfirm={() => handleDeleteStarCustomer(record)}
+						okText='Có'
+						cancelText='Không'
+					>
+						<Button
+							type='link'
+							danger
+							icon={<DeleteOutlined />}
+							loading={isDeleting}
+						>
+							Xóa
+						</Button>
+					</Popconfirm>
+				</Space>
+			),
+		},
+	];
 
 	if (loading) {
-		return <div className='loading'>Đang tải dữ liệu...</div>;
+		return (
+			<div style={{ textAlign: 'center', padding: '50px' }}>
+				<Spin size='large' />
+				<div style={{ marginTop: 16 }}>Đang tải dữ liệu...</div>
+			</div>
+		);
 	}
 
 	if (error) {
 		return (
-			<div className='error'>
-				<h2>Lỗi tải dữ liệu</h2>
-				<p>{error.message}</p>
-				<Button onClick={() => mutateStarCustomers()}>Thử lại</Button>
+			<div style={{ padding: '20px' }}>
+				<Alert
+					message='Lỗi tải dữ liệu'
+					description={error.message}
+					type='error'
+					showIcon
+					action={
+						<Button onClick={() => mutateStarCustomers()}>Thử lại</Button>
+					}
+				/>
 			</div>
 		);
 	}
 
 	return (
-		<div className='star-customers-page'>
-			<h1>Quản lý đánh giá khách hàng</h1>
+		<div style={{ padding: '24px', width: 'calc(100vw - 320px)' }}>
+			<Title level={2}>Quản lý đánh giá khách hàng</Title>
 
 			{/* Statistics Section */}
-			<section className='stats-section'>
-				<h2>Thống kê</h2>
-				<div className='stats-grid'>
-					<div className='stat-card'>
-						<h3>Tổng đánh giá</h3>
-						<div className='stat-number'>{stats.total}</div>
-					</div>
-					<div className='stat-card'>
-						<h3>Điểm trung bình</h3>
-						<div className='stat-number'>{stats.averageRating}/5</div>
-					</div>
-					<div className='stat-card rating-distribution'>
-						<h3>Phân bố đánh giá</h3>
-						<div className='distribution-grid'>
+			<Row gutter={16} style={{ marginBottom: '24px' }}>
+				<Col span={8}>
+					<Card>
+						<Statistic
+							title='Tổng đánh giá'
+							value={stats.total}
+							prefix={<StarFilled />}
+						/>
+					</Card>
+				</Col>
+				<Col span={8}>
+					<Card>
+						<Statistic
+							title='Điểm trung bình'
+							value={stats.averageRating}
+							suffix='/ 5'
+							precision={1}
+						/>
+					</Card>
+				</Col>
+				<Col span={8}>
+					<Card>
+						<div>
+							<div style={{ marginBottom: '8px', fontWeight: 500 }}>
+								Phân bố đánh giá
+							</div>
 							{Object.entries(stats.distribution)
 								.reverse()
 								.map(([star, count]) => (
-									<div key={star} className='distribution-item'>
-										<span className='distribution-star'>{star}★</span>
-										<span className='distribution-count'>{count}</span>
+									<div
+										key={star}
+										style={{
+											display: 'flex',
+											justifyContent: 'space-between',
+											marginBottom: '4px',
+										}}
+									>
+										<span>{star}★</span>
+										<Tag color='blue'>{count}</Tag>
 									</div>
 								))}
 						</div>
-					</div>
-				</div>
-			</section>
+					</Card>
+				</Col>
+			</Row>
 
-			{/* Add Button and Filters Section */}
-			<section className='controls-section'>
-				<div className='controls-row'>
-					<Button onClick={() => setShowAddModal(true)} className='add-button'>
+			{/* Controls Section */}
+			<Card style={{ marginBottom: '24px' }}>
+				<Space
+					style={{
+						width: '100%',
+						justifyContent: 'space-between',
+						flexWrap: 'wrap',
+					}}
+				>
+					<Button
+						type='primary'
+						icon={<PlusOutlined />}
+						onClick={() => setShowAddModal(true)}
+					>
 						Thêm đánh giá mới
 					</Button>
+					<Space>
+						<Input.Search
+							placeholder='Tìm kiếm theo tên khách hàng hoặc nội dung...'
+							value={searchTerm}
+							onChange={e => setSearchTerm(e.target.value)}
+							style={{ width: 300 }}
+							allowClear
+						/>
+						<Select
+							value={sortBy}
+							onChange={setSortBy}
+							style={{ width: 150 }}
+							placeholder='Sắp xếp'
+						>
+							<Select.Option value='date'>Ngày tạo</Select.Option>
+							<Select.Option value='name'>Tên khách hàng</Select.Option>
+							<Select.Option value='rating'>Điểm đánh giá</Select.Option>
+						</Select>
+						<Select
+							value={filterByRating}
+							onChange={setFilterByRating}
+							style={{ width: 120 }}
+							placeholder='Lọc sao'
+						>
+							<Select.Option value='all'>Tất cả</Select.Option>
+							<Select.Option value={5}>5 sao</Select.Option>
+							<Select.Option value={4}>4 sao</Select.Option>
+							<Select.Option value={3}>3 sao</Select.Option>
+							<Select.Option value={2}>2 sao</Select.Option>
+							<Select.Option value={1}>1 sao</Select.Option>
+						</Select>
+					</Space>
+				</Space>
+			</Card>
 
-					<div className='filters-row'>
-						<div className='search-box'>
-							<input
-								type='text'
-								placeholder='Tìm kiếm theo tên khách hàng hoặc nội dung...'
-								value={searchTerm}
-								onChange={e => setSearchTerm(e.target.value)}
-								className='search-input'
-							/>
-						</div>
-
-						<div className='filter-group'>
-							<label>Sắp xếp:</label>
-							<select
-								value={sortBy}
-								onChange={e =>
-									setSortBy(e.target.value as 'date' | 'name' | 'rating')
-								}
-								className='filter-select'
-							>
-								<option value='date'>Ngày tạo</option>
-								<option value='name'>Tên khách hàng</option>
-								<option value='rating'>Điểm đánh giá</option>
-							</select>
-						</div>
-
-						<div className='filter-group'>
-							<label>Lọc theo sao:</label>
-							<select
-								value={filterByRating}
-								onChange={e =>
-									setFilterByRating(
-										e.target.value === 'all' ? 'all' : Number(e.target.value),
-									)
-								}
-								className='filter-select'
-							>
-								<option value='all'>Tất cả</option>
-								<option value={5}>5 sao</option>
-								<option value={4}>4 sao</option>
-								<option value={3}>3 sao</option>
-								<option value={2}>2 sao</option>
-								<option value={1}>1 sao</option>
-							</select>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			{/* Star Customers Table */}
-			<section className='star-customers-section'>
-				<div className='section-header'>
-					<h2>Danh sách đánh giá ({filteredStarCustomers.length})</h2>
-				</div>
-
-				{filteredStarCustomers.length === 0 ? (
-					<div className='no-data'>
-						{searchTerm || filterByRating !== 'all'
-							? 'Không tìm thấy đánh giá nào phù hợp với bộ lọc.'
-							: 'Chưa có đánh giá nào từ khách hàng.'}
-					</div>
-				) : (
-					<div className='star-customers-table-container'>
-						<table className='star-customers-table'>
-							<thead>
-								<tr>
-									<th>Tên khách hàng</th>
-									<th>Đánh giá</th>
-									<th>Nội dung</th>
-									<th>Ngày tạo</th>
-									<th>Thao tác</th>
-								</tr>
-							</thead>
-							<tbody>
-								{filteredStarCustomers.map(customer => (
-									<tr key={customer.id}>
-										<td>
-											<div className='customer-name'>
-												{customer.name_customer}
-											</div>
-										</td>
-										<td>
-											<div className='rating-display'>
-												{renderStars(customer.star)}
-												<span className='rating-number'>({customer.star})</span>
-											</div>
-										</td>
-										<td>
-											<div className='content-preview'>
-												{customer.content
-													? customer.content.length > 50
-														? `${customer.content.substring(0, 50)}...`
-														: customer.content
-													: 'Không có nội dung'}
-											</div>
-										</td>
-										<td>{formatDate(customer.created_at)}</td>
-										<td>
-											<div className='action-buttons'>
-												<Button onClick={() => handleViewDetail(customer)}>
-													Xem chi tiết
-												</Button>
-												<Button
-													variant='danger'
-													onClick={() => handleDeleteStarCustomer(customer)}
-													disabled={isDeleting}
-												>
-													{isDeleting ? 'Đang xóa...' : 'Xóa'}
-												</Button>
-											</div>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				)}
-			</section>
+			{/* Table */}
+			<Card>
+				<Table
+					dataSource={filteredStarCustomers}
+					columns={columns}
+					rowKey='id'
+					pagination={{
+						total: filteredStarCustomers.length,
+						pageSize: 10,
+						showSizeChanger: true,
+						showQuickJumper: true,
+						showTotal: (total, range) =>
+							`${range[0]}-${range[1]} của ${total} đánh giá`,
+					}}
+				/>
+			</Card>
 
 			{/* Add Star Customer Modal */}
 			<Modal
-				isOpen={showAddModal}
-				onClose={() => setShowAddModal(false)}
+				open={showAddModal}
 				title='Thêm đánh giá khách hàng mới'
+				onCancel={() => {
+					setShowAddModal(false);
+					form.resetFields();
+				}}
+				footer={null}
+				width={600}
 			>
-				<form
-					onSubmit={handleAddStarCustomer}
-					className='add-star-customer-form'
+				<Form
+					form={form}
+					layout='vertical'
+					onFinish={handleAddStarCustomer}
+					initialValues={{ star: 5 }}
 				>
-					<div className='form-group'>
-						<label htmlFor='name_customer'>Tên khách hàng *</label>
-						<input
-							type='text'
-							id='name_customer'
-							value={newStarCustomer.name_customer}
-							onChange={e =>
-								setNewStarCustomer(prev => ({
-									...prev,
-									name_customer: e.target.value,
-								}))
-							}
-							required
-							className='form-input'
-						/>
-					</div>
+					<Form.Item
+						label='Tên khách hàng'
+						name='name_customer'
+						rules={[
+							{ required: true, message: 'Vui lòng nhập tên khách hàng!' },
+						]}
+					>
+						<Input placeholder='Nhập tên khách hàng' />
+					</Form.Item>
 
-					<div className='form-group'>
-						<label htmlFor='star'>Đánh giá *</label>
-						<select
-							id='star'
-							value={newStarCustomer.star}
-							onChange={e =>
-								setNewStarCustomer(prev => ({
-									...prev,
-									star: Number(e.target.value),
-								}))
-							}
-							className='form-select'
-						>
-							<option value={5}>5 sao - Tuyệt vời</option>
-							<option value={4}>4 sao - Tốt</option>
-							<option value={3}>3 sao - Trung bình</option>
-							<option value={2}>2 sao - Kém</option>
-							<option value={1}>1 sao - Rất kém</option>
-						</select>
-					</div>
+					<Form.Item
+						label='Đánh giá'
+						name='star'
+						rules={[{ required: true, message: 'Vui lòng chọn đánh giá!' }]}
+					>
+						<Rate />
+					</Form.Item>
 
-					<div className='form-group'>
-						<label htmlFor='content'>Nội dung đánh giá</label>
-						<textarea
-							id='content'
-							value={newStarCustomer.content}
-							onChange={e =>
-								setNewStarCustomer(prev => ({
-									...prev,
-									content: e.target.value,
-								}))
-							}
+					<Form.Item label='Nội dung đánh giá' name='content'>
+						<TextArea
 							rows={4}
-							className='form-textarea'
 							placeholder='Nhập nội dung đánh giá...'
+							showCount
+							maxLength={500}
 						/>
-					</div>
+					</Form.Item>
 
-					<div className='form-actions'>
-						<Button
-							type='button'
-							variant='secondary'
-							onClick={() => setShowAddModal(false)}
-						>
-							Hủy
-						</Button>
-						<Button type='submit' disabled={isAdding}>
-							{isAdding ? 'Đang thêm...' : 'Thêm đánh giá'}
-						</Button>
-					</div>
-				</form>
+					<Form.Item>
+						<Space>
+							<Button onClick={() => setShowAddModal(false)}>Hủy</Button>
+							<Button type='primary' htmlType='submit' loading={isAdding}>
+								{isAdding ? 'Đang thêm...' : 'Thêm đánh giá'}
+							</Button>
+						</Space>
+					</Form.Item>
+				</Form>
 			</Modal>
 
 			{/* Star Customer Detail Modal */}
 			<Modal
-				isOpen={showDetailModal}
-				onClose={() => setShowDetailModal(false)}
+				open={showDetailModal}
 				title='Chi tiết đánh giá'
+				onCancel={() => setShowDetailModal(false)}
+				footer={<Button onClick={() => setShowDetailModal(false)}>Đóng</Button>}
+				width={600}
 			>
 				{selectedStarCustomer && (
-					<div className='star-customer-detail'>
-						<div className='detail-row'>
-							<strong>Tên khách hàng:</strong>
-							<span>{selectedStarCustomer.name_customer}</span>
-						</div>
-						<div className='detail-row'>
-							<strong>Đánh giá:</strong>
-							<div className='rating-display'>
-								{renderStars(selectedStarCustomer.star)}
-								<span className='rating-number'>
-									({selectedStarCustomer.star}/5)
-								</span>
-							</div>
-						</div>
-						<div className='detail-row'>
-							<strong>Ngày tạo:</strong>
-							<span>{formatDate(selectedStarCustomer.created_at)}</span>
-						</div>
-						<div className='detail-row'>
-							<strong>Nội dung:</strong>
-							<div className='content-full'>
-								{selectedStarCustomer.content || 'Không có nội dung đánh giá.'}
-							</div>
-						</div>
+					<div>
+						<Row gutter={[16, 16]}>
+							<Col span={24}>
+								<strong>Tên khách hàng:</strong>
+								<div style={{ marginTop: '8px' }}>
+									{selectedStarCustomer.name_customer}
+								</div>
+							</Col>
+							<Col span={24}>
+								<strong>Đánh giá:</strong>
+								<div style={{ marginTop: '8px' }}>
+									<Rate disabled defaultValue={selectedStarCustomer.star} />
+									<span style={{ marginLeft: '8px' }}>
+										({selectedStarCustomer.star}/5)
+									</span>
+								</div>
+							</Col>
+							<Col span={24}>
+								<strong>Ngày tạo:</strong>
+								<div style={{ marginTop: '8px' }}>
+									{formatDate(selectedStarCustomer.created_at)}
+								</div>
+							</Col>
+							<Col span={24}>
+								<strong>Nội dung:</strong>
+								<div
+									style={{
+										marginTop: '8px',
+										padding: '12px',
+										backgroundColor: '#f5f5f5',
+										borderRadius: '6px',
+									}}
+								>
+									{selectedStarCustomer.content ||
+										'Không có nội dung đánh giá.'}
+								</div>
+							</Col>
+						</Row>
 					</div>
 				)}
 			</Modal>

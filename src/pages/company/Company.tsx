@@ -6,7 +6,7 @@ import { handleApiError, checkAuthentication } from '../../utils/errorHandler';
 import type {
 	CompanyInfo,
 	CompanyContact,
-	Service,
+	// Service, // Commented out since services section is disabled
 	CompanyUpdateRequest,
 	CompanyContactUpdateRequest,
 } from '../../interfaces/company';
@@ -37,11 +37,28 @@ export const Company = () => {
 	const bannerImageRef = useRef<HTMLInputElement>(null);
 
 	// Fetch data
-	const { data: companyInfo, mutate: mutateCompanyInfo } =
-		useApi<CompanyInfo>('/company/info');
-	const { data: contactInfo } = useApi<CompanyContact>('/company/contact');
-	const { data: services, mutate: mutateServices } =
-		useApi<Service[]>('/company/services');
+	const { data: companyInfoResponse, mutate: mutateCompanyInfo } = useApi<{
+		success: boolean;
+		message: string;
+		data: CompanyInfo;
+	}>('/company/info');
+
+	const { data: contactInfoResponse } = useApi<{
+		success: boolean;
+		message: string;
+		data: CompanyContact;
+	}>('/company/contact');
+
+	// const { data: servicesResponse, mutate: mutateServices } = useApi<{
+	// 	success: boolean;
+	// 	message: string;
+	// 	data: Service[];
+	// }>('/company/services');
+
+	// Extract data from API responses
+	const companyInfo = companyInfoResponse?.data;
+	const contactInfo = contactInfoResponse?.data;
+	// const services = servicesResponse?.data || []; // Commented out since services section is disabled
 
 	// Handle form submission
 	const handleUpdateCompanyInfo = async (e: React.FormEvent) => {
@@ -145,7 +162,7 @@ export const Company = () => {
 		try {
 			await CompanyService.createService(newService);
 			alert('Tạo dịch vụ thành công!');
-			mutateServices();
+			// mutateServices(); // Commented out since services hook is disabled
 			setShowServiceModal(false);
 			setNewService({ title: '', description: '', image_url: '' });
 		} catch (error: unknown) {
@@ -204,7 +221,7 @@ export const Company = () => {
 		}
 	};
 
-	if (!companyInfo) {
+	if (!companyInfoResponse) {
 		return (
 			<div className='loading'>
 				<div>Đang tải...</div>
@@ -220,6 +237,16 @@ export const Company = () => {
 						{/* <LoginDemo /> */}
 					</div>
 				)}
+			</div>
+		);
+	}
+
+	// Additional check for companyInfo data
+	if (!companyInfo) {
+		return (
+			<div className='loading'>
+				<div>Dữ liệu không khả dụng</div>
+				<div>Response: {JSON.stringify(companyInfoResponse)}</div>
 			</div>
 		);
 	}

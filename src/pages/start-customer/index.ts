@@ -1,2 +1,1 @@
-import StarCustomer from './StarCustomer';
-export { StarCustomer };
+export { default as StarCustomer } from './StarCustomer';

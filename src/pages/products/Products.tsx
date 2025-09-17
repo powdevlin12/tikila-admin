@@ -36,8 +36,14 @@ const Products: React.FC = () => {
 	const { isAuthenticated, token } = useAuthStore();
 
 	// Fetch data
-	const { data: products, mutate: mutateProducts } =
-		useApi<Product[]>('/products');
+	const { data: productsResponse, mutate: mutateProducts } = useApi<{
+		success: boolean;
+		message: string;
+		data: Product[];
+	}>('/products');
+
+	// Extract products array from API response
+	const products = productsResponse?.data || [];
 
 	// Handle delete product
 	const handleDeleteProduct = async (product: Product) => {
@@ -244,7 +250,7 @@ const Products: React.FC = () => {
 		},
 	];
 
-	if (!products) {
+	if (!productsResponse) {
 		return (
 			<MainLayout title='Products Management'>
 				<div className='loading'>
@@ -284,7 +290,7 @@ const Products: React.FC = () => {
 
 				<Table
 					columns={columns}
-					dataSource={products}
+					dataSource={Array.isArray(products) ? products : []}
 					rowKey='id'
 					loading={isLoading}
 					pagination={{

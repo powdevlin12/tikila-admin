@@ -1,52 +1,72 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useApi } from '../../services';
 import { FooterLinkService } from '../../services/footerLinkService';
 import { useAuthStore } from '../../store/authStore';
 import { handleApiError, checkAuthentication } from '../../utils/errorHandler';
 import type { FooterLink, FooterLinkCreateRequest } from '../../interfaces';
-import { Button, Input, Modal } from '../../components/ui';
 import { MainLayout } from '../../layouts';
+import {
+	Card,
+	Button,
+	Modal,
+	Form,
+	Select,
+	Space,
+	Typography,
+	Divider,
+	Row,
+	Col,
+	Tag,
+	Popconfirm,
+	message,
+	Empty,
+	Input,
+} from 'antd';
+import {
+	PlusOutlined,
+	EditOutlined,
+	DeleteOutlined,
+	LinkOutlined,
+	ExportOutlined,
+} from '@ant-design/icons';
 import './Footer.css';
+
+const { Title, Text } = Typography;
+const { Option } = Select;
 
 const Footer = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [editingLink, setEditingLink] = useState<FooterLink | null>(null);
-	const [formData, setFormData] = useState<FooterLinkCreateRequest>({
-		title: '',
-		url: '',
-		column_position: 1,
-		title_column: '',
-	});
+	const [form] = Form.useForm();
 
 	// Auth info
 	const { isAuthenticated, token } = useAuthStore();
 
 	// Fetch data
-	const { data: footerLinks, mutate: mutateFooterLinks } = useApi<FooterLink[]>(
-		'/company/footer-links',
-	);
+	const { data: footerLinksResponse, mutate: mutateFooterLinks } = useApi<{
+		isSuccess: boolean;
+		message: string;
+		data: FooterLink[];
+	}>('/company/footer-links');
+
+	// Extract footer links array from API response
+	const footerLinks = footerLinksResponse?.data || [];
 
 	// Group links by column
-	const groupedLinks =
-		footerLinks?.reduce((acc, link) => {
-			const column = link.column_position;
-			if (!acc[column]) {
-				acc[column] = [];
-			}
-			acc[column].push(link);
-			return acc;
-		}, {} as Record<number, FooterLink[]>) || {};
+	const groupedLinks = Array.isArray(footerLinks)
+		? footerLinks.reduce((acc, link) => {
+				const column = link.column_position;
+				if (!acc[column]) {
+					acc[column] = [];
+				}
+				acc[column].push(link);
+				return acc;
+		  }, {} as Record<number, FooterLink[]>)
+		: {};
 
 	// Handle create/update
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-
-		if (!formData.title || !formData.url) {
-			alert('Vui lòng điền đầy đủ thông tin');
-			return;
-		}
-
+	const handleSubmit = async (values: FooterLinkCreateRequest) => {
 		if (!checkAuthentication(isAuthenticated, token)) {
 			return;
 		}
@@ -56,12 +76,12 @@ const Footer = () => {
 			if (editingLink) {
 				await FooterLinkService.updateFooterLink(
 					editingLink.id!.toString(),
-					formData,
+					values,
 				);
-				alert('Cập nhật footer link thành công!');
+				message.success('Cập nhật footer link thành công!');
 			} else {
-				await FooterLinkService.createFooterLink(formData);
-				alert('Tạo footer link thành công!');
+				await FooterLinkService.createFooterLink(values);
+				message.success('Tạo footer link thành công!');
 			}
 
 			mutateFooterLinks();
@@ -80,10 +100,6 @@ const Footer = () => {
 
 	// Handle delete
 	const handleDelete = async (link: FooterLink) => {
-		if (!window.confirm(`Bạn có chắc chắn muốn xóa link "${link.title}"?`)) {
-			return;
-		}
-
 		if (!checkAuthentication(isAuthenticated, token)) {
 			return;
 		}
@@ -91,7 +107,7 @@ const Footer = () => {
 		setIsLoading(true);
 		try {
 			await FooterLinkService.deleteFooterLink(link.id!.toString());
-			alert('Xóa footer link thành công!');
+			message.success('Xóa footer link thành công!');
 			mutateFooterLinks();
 		} catch (error: unknown) {
 			handleApiError(error, 'Lỗi khi xóa footer link');
@@ -103,7 +119,7 @@ const Footer = () => {
 	// Handle edit
 	const handleEdit = (link: FooterLink) => {
 		setEditingLink(link);
-		setFormData({
+		form.setFieldsValue({
 			title: link.title,
 			url: link.url,
 			column_position: link.column_position,
@@ -115,12 +131,7 @@ const Footer = () => {
 	// Handle create new
 	const handleCreateNew = () => {
 		setEditingLink(null);
-		setFormData({
-			title: '',
-			url: '',
-			column_position: 1,
-			title_column: '',
-		});
+		form.resetFields();
 		setShowCreateModal(true);
 	};
 
@@ -128,156 +139,195 @@ const Footer = () => {
 	const handleCloseModal = () => {
 		setShowCreateModal(false);
 		setEditingLink(null);
-		setFormData({
-			title: '',
-			url: '',
-			column_position: 1,
-			title_column: '',
-		});
-	};
-
-	// Handle input change
-	const handleInputChange = (
-		field: keyof FooterLinkCreateRequest,
-		value: string | number,
-	) => {
-		setFormData(prev => ({
-			...prev,
-			[field]: value,
-		}));
+		form.resetFields();
 	};
 
 	return (
 		<MainLayout>
-			<div className='footer-admin-page'>
-				<div className='page-header'>
-					<h1>Quản lý Footer Links</h1>
-					<Button onClick={handleCreateNew}>Thêm Link Mới</Button>
-				</div>
+			<div style={{ padding: '24px', width: 'calc(100vw - 320px)' }}>
+				<Card>
+					<Row
+						justify='space-between'
+						align='middle'
+						style={{ marginBottom: 24 }}
+					>
+						<Col>
+							<Title level={2} style={{ margin: 0 }}>
+								<LinkOutlined /> Quản lý Footer Links
+							</Title>
+						</Col>
+						<Col>
+							<Button
+								type='primary'
+								icon={<PlusOutlined />}
+								onClick={handleCreateNew}
+								size='large'
+							>
+								Thêm Link Mới
+							</Button>
+						</Col>
+					</Row>
 
-				<div className='footer-preview'>
-					<h2>Preview Footer</h2>
-					<div className='footer-columns'>
+					<Divider orientation='left'>
+						<Title level={3}>Preview Footer</Title>
+					</Divider>
+
+					<Row gutter={[16, 16]}>
 						{[1, 2, 3, 4].map(columnNumber => (
-							<div key={columnNumber} className='footer-column'>
-								<h3>Cột {columnNumber}</h3>
-								{groupedLinks[columnNumber]?.length > 0 ? (
-									<>
-										{groupedLinks[columnNumber][0]?.title_column && (
-											<h4 className='column-title'>
+							<Col xs={24} sm={12} md={6} key={columnNumber}>
+								<Card
+									size='small'
+									title={
+										<Space>
+											<Text strong>Cột {columnNumber}</Text>
+											<Tag color='blue'>
+												{groupedLinks[columnNumber]?.length || 0} links
+											</Tag>
+										</Space>
+									}
+									extra={
+										groupedLinks[columnNumber]?.[0]?.title_column && (
+											<Tag color='green'>
 												{groupedLinks[columnNumber][0].title_column}
-											</h4>
-										)}
-										<ul className='footer-links-list'>
+											</Tag>
+										)
+									}
+								>
+									{groupedLinks[columnNumber]?.length > 0 ? (
+										<Space direction='vertical' style={{ width: '100%' }}>
 											{groupedLinks[columnNumber].map(link => (
-												<li key={link.id} className='footer-link-item'>
-													<div className='link-info'>
+												<Card
+													key={link.id}
+													size='small'
+													style={{ marginBottom: 8 }}
+													actions={[
+														<Button
+															type='text'
+															icon={<EditOutlined />}
+															onClick={() => handleEdit(link)}
+															size='small'
+														>
+															Sửa
+														</Button>,
+														<Popconfirm
+															title='Xóa footer link'
+															description={`Bạn có chắc chắn muốn xóa link "${link.title}"?`}
+															onConfirm={() => handleDelete(link)}
+															okText='Có'
+															cancelText='Không'
+														>
+															<Button
+																type='text'
+																danger
+																icon={<DeleteOutlined />}
+																size='small'
+																loading={isLoading}
+															>
+																Xóa
+															</Button>
+														</Popconfirm>,
+													]}
+												>
+													<Space direction='vertical' style={{ width: '100%' }}>
+														<Text strong>{link.title}</Text>
 														<a
 															href={link.url}
 															target='_blank'
 															rel='noopener noreferrer'
+															style={{ fontSize: '12px' }}
 														>
-															{link.title}
+															<ExportOutlined /> {link.url}
 														</a>
-													</div>
-													<div className='link-actions'>
-														<Button
-															variant='secondary'
-															onClick={() => handleEdit(link)}
-														>
-															Sửa
-														</Button>
-														<Button
-															variant='danger'
-															onClick={() => handleDelete(link)}
-															disabled={isLoading}
-														>
-															Xóa
-														</Button>
-													</div>
-												</li>
+													</Space>
+												</Card>
 											))}
-										</ul>
-									</>
-								) : (
-									<p className='empty-column'>Chưa có link nào</p>
-								)}
-							</div>
+										</Space>
+									) : (
+										<Empty
+											image={Empty.PRESENTED_IMAGE_SIMPLE}
+											description='Chưa có link nào'
+											style={{ margin: '16px 0' }}
+										/>
+									)}
+								</Card>
+							</Col>
 						))}
-					</div>
-				</div>
+					</Row>
+				</Card>
 
 				{/* Modal for Create/Edit */}
 				<Modal
-					isOpen={showCreateModal}
-					onClose={handleCloseModal}
-					title={editingLink ? 'Chỉnh sửa Footer Link' : 'Thêm Footer Link Mới'}
+					open={showCreateModal}
+					onCancel={handleCloseModal}
+					title={
+						<Space>
+							{editingLink ? <EditOutlined /> : <PlusOutlined />}
+							{editingLink ? 'Chỉnh sửa Footer Link' : 'Thêm Footer Link Mới'}
+						</Space>
+					}
+					footer={null}
+					width={600}
 				>
-					<form onSubmit={handleSubmit} className='footer-link-form'>
-						<div className='form-group'>
-							<label>Tiêu đề:</label>
-							<Input
-								value={formData.title}
-								onChange={e => handleInputChange('title', e.target.value)}
-								placeholder='Nhập tiêu đề link'
-								required
-							/>
-						</div>
+					<Form
+						form={form}
+						layout='vertical'
+						onFinish={handleSubmit}
+						initialValues={{
+							column_position: 1,
+						}}
+					>
+						<Form.Item
+							label='Tiêu đề'
+							name='title'
+							rules={[
+								{ required: true, message: 'Vui lòng nhập tiêu đề link!' },
+							]}
+						>
+							<Input placeholder='Nhập tiêu đề link' />
+						</Form.Item>
 
-						<div className='form-group'>
-							<label>URL:</label>
-							<Input
-								value={formData.url}
-								onChange={e => handleInputChange('url', e.target.value)}
-								placeholder='Nhập URL (VD: https://example.com)'
-								required
-							/>
-						</div>
+						<Form.Item
+							label='URL'
+							name='url'
+							rules={[
+								{ required: true, message: 'Vui lòng nhập URL!' },
+								{ type: 'url', message: 'URL không hợp lệ!' },
+							]}
+						>
+							<Input placeholder='Nhập URL (VD: https://example.com)' />
+						</Form.Item>
 
-						<div className='form-group'>
-							<label>Cột hiển thị:</label>
-							<select
-								value={formData.column_position}
-								onChange={e =>
-									handleInputChange('column_position', parseInt(e.target.value))
-								}
-								className='form-select'
-							>
-								<option value={1}>Cột 1</option>
-								<option value={2}>Cột 2</option>
-								<option value={3}>Cột 3</option>
-								<option value={4}>Cột 4</option>
-							</select>
-						</div>
+						<Row gutter={16}>
+							<Col span={12}>
+								<Form.Item
+									label='Cột hiển thị'
+									name='column_position'
+									rules={[{ required: true, message: 'Vui lòng chọn cột!' }]}
+								>
+									<Select placeholder='Chọn cột hiển thị'>
+										<Option value={1}>Cột 1</Option>
+										<Option value={2}>Cột 2</Option>
+										<Option value={3}>Cột 3</Option>
+										<Option value={4}>Cột 4</Option>
+									</Select>
+								</Form.Item>
+							</Col>
+							<Col span={12}>
+								<Form.Item label='Tiêu đề cột (tùy chọn)' name='title_column'>
+									<Input placeholder='VD: Dịch vụ, Chính sách...' />
+								</Form.Item>
+							</Col>
+						</Row>
 
-						<div className='form-group'>
-							<label>Tiêu đề cột (tùy chọn):</label>
-							<Input
-								value={formData.title_column}
-								onChange={e =>
-									handleInputChange('title_column', e.target.value)
-								}
-								placeholder='Nhập tiêu đề cột (VD: Dịch vụ, Chính sách...)'
-							/>
-						</div>
-
-						<div className='form-actions'>
-							<Button
-								type='button'
-								variant='secondary'
-								onClick={handleCloseModal}
-							>
-								Hủy
-							</Button>
-							<Button type='submit' disabled={isLoading}>
-								{isLoading
-									? 'Đang xử lý...'
-									: editingLink
-									? 'Cập nhật'
-									: 'Tạo mới'}
-							</Button>
-						</div>
-					</form>
+						<Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+							<Space>
+								<Button onClick={handleCloseModal}>Hủy</Button>
+								<Button type='primary' htmlType='submit' loading={isLoading}>
+									{editingLink ? 'Cập nhật' : 'Tạo mới'}
+								</Button>
+							</Space>
+						</Form.Item>
+					</Form>
 				</Modal>
 			</div>
 		</MainLayout>
