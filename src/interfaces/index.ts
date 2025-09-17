@@ -3,6 +3,7 @@ export * from './auth';
 export * from './company';
 export * from './contact';
 export * from './product';
+export * from './starCustomer';
 
 export interface User {
 	id: string;

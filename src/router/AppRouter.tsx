@@ -13,6 +13,7 @@ import {
 	Footer,
 	CreateEditProduct,
 } from '../pages';
+import StarCustomer from '../pages/start-customer/StarCustomer';
 import { Login, Register } from '../pages/login';
 import { ProtectedRoute } from '../components';
 import MainLayout from '../layouts/MainLayout';
@@ -80,6 +81,16 @@ const AppRouter: React.FC = () => {
 						<ProtectedRoute>
 							<MainLayout>
 								<Introduce />
+							</MainLayout>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path='/admin/star-customers'
+					element={
+						<ProtectedRoute>
+							<MainLayout>
+								<StarCustomer />
 							</MainLayout>
 						</ProtectedRoute>
 					}

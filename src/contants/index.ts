@@ -1,6 +1,5 @@
 // Constants for admin panel
-export const API_BASE_URL =
-	process.env.REACT_APP_API_BASE_URL || 'http://localhost:1236/api';
+export const API_BASE_URL = 'http://localhost:1236/api';
 
 export const ROUTES = {
 	DASHBOARD: '/admin',
@@ -9,6 +8,7 @@ export const ROUTES = {
 	ORDERS: '/admin/orders',
 	SETTINGS: '/admin/settings',
 	LOGIN: '/admin/login',
+	STAR_CUSTOMERS: '/admin/star-customers',
 } as const;
 
 export const STATUS = {

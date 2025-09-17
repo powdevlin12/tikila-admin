@@ -21,7 +21,7 @@ export const useApi = <T = unknown>(url: string | null): ApiResponse<T> => {
 	});
 
 	return {
-		data: data?.data || data,
+		data: data as T,
 		loading: !error && !data,
 		error,
 		mutate,
