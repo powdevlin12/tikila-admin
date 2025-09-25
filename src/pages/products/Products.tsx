@@ -26,7 +26,6 @@ import { ProductService } from '../../services';
 import { useAuthStore } from '../../store';
 import type { Product } from '../../interfaces';
 import { checkAuthentication, handleApiError } from '../../utils';
-import './Products.css';
 
 const Products: React.FC = () => {
 	const navigate = useNavigate();
