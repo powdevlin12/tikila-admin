@@ -19,7 +19,7 @@ import {
 	UploadOutlined,
 	EyeOutlined,
 } from '@ant-design/icons';
-import './products.css';
+import './Products.css';
 import { MainLayout } from '../../layouts';
 import { useApi } from '../../services/hooks';
 import { ProductService } from '../../services';
