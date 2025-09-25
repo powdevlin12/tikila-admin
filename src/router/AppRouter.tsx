@@ -6,14 +6,12 @@ import {
 	Navigate,
 } from 'react-router-dom';
 import {
-	Dashboard,
 	Users,
 	Products,
-	Orders,
 	Footer,
 	CreateEditProduct,
 } from '../pages';
-import StarCustomer from '../pages/start-customer/StarCustomer';
+import { StarCustomer } from '../pages/start-customer';
 import { Login, Register } from '../pages/login';
 import { ProtectedRoute } from '../components';
 import MainLayout from '../layouts/MainLayout';

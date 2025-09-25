@@ -11,7 +11,7 @@ class AuthService {
 	private readonly basePath = '/users';
 
 	async login(credentials: LoginRequest): Promise<LoginResponse> {
-		const response = await apiClient.post(
+		const response = await apiClient.post<LoginRequest, LoginResponse>(
 			`${this.basePath}/login`,
 			credentials,
 		);
@@ -19,7 +19,7 @@ class AuthService {
 	}
 
 	async register(userData: RegisterRequest): Promise<RegisterResponse> {
-		const response = await apiClient.post(
+		const response = await apiClient.post<RegisterRequest, RegisterResponse>(
 			`${this.basePath}/register`,
 			userData,
 		);
@@ -27,7 +27,9 @@ class AuthService {
 	}
 
 	async getMe(): Promise<GetMeResponse> {
-		const response = await apiClient.get(`${this.basePath}/get-me`);
+		const response = await apiClient.get<unknown, GetMeResponse>(
+			`${this.basePath}/get-me`,
+		);
 		return response;
 	}
 

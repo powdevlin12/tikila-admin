@@ -1,1 +1,1 @@
-export { default as StarCustomer } from './StarCustomer';
+export { StarCustomerPage as StarCustomer } from './StarCustomer';

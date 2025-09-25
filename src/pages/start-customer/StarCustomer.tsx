@@ -37,7 +37,7 @@ import type {
 const { Title } = Typography;
 const { TextArea } = Input;
 
-const StarCustomer: React.FC = () => {
+export const StarCustomerPage: React.FC = () => {
 	const [selectedStarCustomer, setSelectedStarCustomer] =
 		useState<StarCustomer | null>(null);
 	const [showDetailModal, setShowDetailModal] = useState(false);
@@ -485,5 +485,3 @@ const StarCustomer: React.FC = () => {
 		</div>
 	);
 };
-
-export default StarCustomer;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 // Custom hook for managing loading state
 export const useLoading = (initialState: boolean = false) => {
