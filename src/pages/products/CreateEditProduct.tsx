@@ -32,6 +32,12 @@ interface ProductWithDetailInfo extends Product {
 	detail_info?: string;
 }
 
+interface ProductResponse {
+	data?: ProductWithDetailInfo;
+	message: string;
+	success: boolean;
+}
+
 const { TextArea } = Input;
 
 const CreateEditProduct: React.FC = () => {
@@ -51,9 +57,11 @@ const CreateEditProduct: React.FC = () => {
 	const { isAuthenticated, token } = useAuthStore();
 
 	// Fetch product data if editing
-	const { data: product } = useApi<Product>(
+	const { data } = useApi<ProductResponse>(
 		isEditing ? `/products/${id}` : null,
 	);
+
+	const product = data?.data;
 
 	// Load product data when editing
 	useEffect(() => {
