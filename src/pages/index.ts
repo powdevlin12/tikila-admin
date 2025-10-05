@@ -4,5 +4,6 @@ export * from './products';
 export * from './orders';
 export * from './login';
 export { default as Footer } from './footer/Footer';
+export { default as FooterColumns } from './footer-columns';
 export * from './start-customer';
 export * from './service-registrations';

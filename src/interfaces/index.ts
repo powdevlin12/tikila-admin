@@ -6,6 +6,8 @@ export * from './product';
 export * from './starCustomer';
 export * from './serviceRegistration';
 export * from './dashboard';
+export * from './footerLink';
+export * from './footerColumn';
 
 export interface User {
 	id: string;

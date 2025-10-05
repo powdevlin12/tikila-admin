@@ -4,64 +4,70 @@ import type {
 	FooterLink,
 	FooterLinkCreateRequest,
 	FooterLinkUpdateRequest,
-} from '../interfaces/company';
+} from '../interfaces/footerLink';
 
 export class FooterLinkService {
 	// Lấy tất cả footer links
 	static async getAllFooterLinks(): Promise<FooterLink[]> {
-		const response = await apiClient.get<FooterLink[]>('/company/footer-links');
-		return response.data;
+		const response = await apiClient.get<{
+			isSuccess: boolean;
+			message: string;
+			data: FooterLink[];
+		}>('/footer-links');
+		return response.data.data;
 	}
 
 	// Lấy footer links theo column
 	static async getFooterLinksByColumn(
-		columnPosition: number,
+		footerColumnId: number,
 	): Promise<FooterLink[]> {
-		const response = await apiClient.get<FooterLink[]>(
-			`/footer-links/column/${columnPosition}`,
-		);
-		return response.data;
+		const response = await apiClient.get<{
+			isSuccess: boolean;
+			message: string;
+			data: FooterLink[];
+		}>(`/footer-links/column/${footerColumnId}`);
+		return response.data.data;
+	}
+
+	// Lấy footer links được nhóm theo column
+	static async getFooterLinksGrouped(): Promise<any> {
+		const response = await apiClient.get<{
+			isSuccess: boolean;
+			message: string;
+			data: any;
+		}>('/footer-links/grouped');
+		return response.data.data;
 	}
 
 	// Tạo footer link mới
 	static async createFooterLink(data: FooterLinkCreateRequest) {
-		return apiPost<{ success: boolean; message: string; data: { id: number } }>(
-			'/footer-links',
-			data,
-			{
-				revalidateKeys: ['/company/footer-links'],
-			},
-		);
+		return apiPost<{
+			isSuccess: boolean;
+			message: string;
+			data: FooterLink;
+		}>('/footer-links', data, {
+			revalidateKeys: ['/footer-links', '/footer-links/grouped'],
+		});
 	}
 
 	// Cập nhật footer link
 	static async updateFooterLink(id: string, data: FooterLinkUpdateRequest) {
-		return apiPut<{ success: boolean; message: string }>(
-			`/footer-links/${id}`,
-			data,
-			{
-				revalidateKeys: ['/company/footer-links'],
-			},
-		);
+		return apiPut<{
+			isSuccess: boolean;
+			message: string;
+			data: FooterLink;
+		}>(`/footer-links/${id}`, data, {
+			revalidateKeys: ['/footer-links', '/footer-links/grouped'],
+		});
 	}
 
 	// Xóa footer link
 	static async deleteFooterLink(id: string) {
-		return apiDelete<{ success: boolean; message: string }>(
-			`/footer-links/${id}`,
-			{
-				revalidateKeys: ['/company/footer-links'],
-			},
-		);
-	}
-
-	// Xóa tất cả footer links theo column
-	static async deleteFooterLinksByColumn(columnPosition: number) {
-		return apiDelete<{ success: boolean; message: string }>(
-			`/footer-links/column/${columnPosition}`,
-			{
-				revalidateKeys: ['/company/footer-links'],
-			},
-		);
+		return apiDelete<{
+			isSuccess: boolean;
+			message: string;
+		}>(`/footer-links/${id}`, {
+			revalidateKeys: ['/footer-links', '/footer-links/grouped'],
+		});
 	}
 }

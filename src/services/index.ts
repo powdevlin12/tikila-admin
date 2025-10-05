@@ -9,3 +9,5 @@ export { ProductService } from './productService';
 export { StarCustomerService } from './starCustomerService';
 export { ServiceRegistrationService } from './serviceRegistrationService';
 export { dashboardService } from './dashboardService';
+export { FooterLinkService } from './footerLinkService';
+export { FooterColumnService } from './footerColumnService';

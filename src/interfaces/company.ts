@@ -35,17 +35,6 @@ export interface Service {
 	updated_at?: string;
 }
 
-export interface FooterLink {
-	id?: number;
-	title: string;
-	url: string;
-	column_position: number;
-	order_in_column?: number;
-	title_column?: string;
-	created_at?: string;
-	updated_at?: string;
-}
-
 export interface CompanyUpdateRequest {
 	name?: string;
 	intro_text?: string;
@@ -63,18 +52,4 @@ export interface CompanyContactUpdateRequest {
 	facebook_link?: string;
 	zalo_link?: string;
 	tiktok_link?: string;
-}
-
-export interface FooterLinkCreateRequest {
-	title: string;
-	url: string;
-	column_position: number;
-	title_column?: string;
-}
-
-export interface FooterLinkUpdateRequest {
-	title?: string;
-	url?: string;
-	column_position?: number;
-	title_column?: string;
 }

@@ -18,6 +18,7 @@ import { Login, Register } from '../pages/login';
 import { ProtectedRoute } from '../components';
 import MainLayout from '../layouts/MainLayout';
 import { Company } from '../pages/company/Company';
+import FooterColumns from '../pages/footer-columns';
 import Introduce from '../pages/introduce';
 
 const AppRouter: React.FC = () => {
@@ -110,6 +111,14 @@ const AppRouter: React.FC = () => {
 					element={
 						<ProtectedRoute>
 							<Footer />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path='/admin/footer-columns'
+					element={
+						<ProtectedRoute>
+							<FooterColumns />
 						</ProtectedRoute>
 					}
 				/>

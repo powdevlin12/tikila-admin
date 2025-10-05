@@ -1,34 +1,38 @@
+import {
+	DeleteOutlined,
+	EditOutlined,
+	LinkOutlined,
+	PlusOutlined,
+	SettingOutlined,
+} from '@ant-design/icons';
+import {
+	Button,
+	Card,
+	Col,
+	Empty,
+	Form,
+	Input,
+	InputNumber,
+	Modal,
+	Popconfirm,
+	Row,
+	Select,
+	Space,
+	Tag,
+	Typography,
+	message,
+} from 'antd';
 import { useState } from 'react';
+import type {
+	FooterColumn,
+	FooterLink,
+	FooterLinkCreateRequest,
+} from '../../interfaces';
+import { MainLayout } from '../../layouts';
 import { useApi } from '../../services';
 import { FooterLinkService } from '../../services/footerLinkService';
 import { useAuthStore } from '../../store/authStore';
-import { handleApiError, checkAuthentication } from '../../utils/errorHandler';
-import type { FooterLink, FooterLinkCreateRequest } from '../../interfaces';
-import { MainLayout } from '../../layouts';
-import {
-	Card,
-	Button,
-	Modal,
-	Form,
-	Select,
-	Space,
-	Typography,
-	Divider,
-	Row,
-	Col,
-	Tag,
-	Popconfirm,
-	message,
-	Empty,
-	Input,
-} from 'antd';
-import {
-	PlusOutlined,
-	EditOutlined,
-	DeleteOutlined,
-	LinkOutlined,
-	ExportOutlined,
-} from '@ant-design/icons';
+import { checkAuthentication, handleApiError } from '../../utils/errorHandler';
 import './Footer.css';
 
 const { Title, Text } = Typography;
@@ -48,19 +52,28 @@ const Footer = () => {
 		isSuccess: boolean;
 		message: string;
 		data: FooterLink[];
-	}>('/company/footer-links');
+	}>('/footer-links');
 
-	// Extract footer links array from API response
+	const { data: footerColumnsResponse } = useApi<{
+		isSuccess: boolean;
+		message: string;
+		data: FooterColumn[];
+	}>('/footer-columns');
+
+	// Extract arrays from API response
 	const footerLinks = footerLinksResponse?.data || [];
+	const footerColumns = footerColumnsResponse?.data || [];
 
 	// Group links by column
 	const groupedLinks = Array.isArray(footerLinks)
 		? footerLinks.reduce((acc, link) => {
-				const column = link.column_position;
-				if (!acc[column]) {
-					acc[column] = [];
+				const columnId = link.footerColumnId;
+				if (columnId && !acc[columnId]) {
+					acc[columnId] = [];
 				}
-				acc[column].push(link);
+				if (columnId) {
+					acc[columnId].push(link);
+				}
 				return acc;
 		  }, {} as Record<number, FooterLink[]>)
 		: {};
@@ -122,8 +135,8 @@ const Footer = () => {
 		form.setFieldsValue({
 			title: link.title,
 			url: link.url,
-			column_position: link.column_position,
-			title_column: link.title_column || '',
+			footerColumnId: link.footerColumnId,
+			orderPosition: link.orderPosition || 0,
 		});
 		setShowCreateModal(true);
 	};
@@ -132,6 +145,8 @@ const Footer = () => {
 	const handleCreateNew = () => {
 		setEditingLink(null);
 		form.resetFields();
+		// Set default orderPosition
+		form.setFieldsValue({ orderPosition: 0 });
 		setShowCreateModal(true);
 	};
 
@@ -149,122 +164,154 @@ const Footer = () => {
 					<Row
 						justify='space-between'
 						align='middle'
-						style={{ marginBottom: 24 }}
+						style={{ marginBottom: '16px' }}
 					>
 						<Col>
-							<Title level={2} style={{ margin: 0 }}>
+							<Title level={3} style={{ margin: 0 }}>
 								<LinkOutlined /> Quản lý Footer Links
 							</Title>
+							<Text type='secondary'>
+								Quản lý các liên kết trong footer của website
+							</Text>
 						</Col>
 						<Col>
-							<Button
-								type='primary'
-								icon={<PlusOutlined />}
-								onClick={handleCreateNew}
-								size='large'
-							>
-								Thêm Link Mới
-							</Button>
+							<Space>
+								<Button
+									icon={<SettingOutlined />}
+									onClick={() => window.open('/admin/footer-columns', '_blank')}
+								>
+									Quản lý cột
+								</Button>
+								<Button
+									type='primary'
+									icon={<PlusOutlined />}
+									onClick={handleCreateNew}
+									size='large'
+								>
+									Thêm link mới
+								</Button>
+							</Space>
 						</Col>
 					</Row>
 
-					<Divider orientation='left'>
-						<Title level={3}>Preview Footer</Title>
-					</Divider>
-
-					<Row gutter={[16, 16]}>
-						{[1, 2, 3, 4].map(columnNumber => (
-							<Col xs={24} sm={12} md={6} key={columnNumber}>
-								<Card
-									size='small'
-									title={
-										<Space>
-											<Text strong>Cột {columnNumber}</Text>
-											<Tag color='blue'>
-												{groupedLinks[columnNumber]?.length || 0} links
-											</Tag>
-										</Space>
-									}
-									extra={
-										groupedLinks[columnNumber]?.[0]?.title_column && (
-											<Tag color='green'>
-												{groupedLinks[columnNumber][0].title_column}
-											</Tag>
-										)
-									}
-								>
-									{groupedLinks[columnNumber]?.length > 0 ? (
-										<Space direction='vertical' style={{ width: '100%' }}>
-											{groupedLinks[columnNumber].map(link => (
-												<Card
-													key={link.id}
-													size='small'
-													style={{ marginBottom: 8 }}
-													actions={[
-														<Button
-															type='text'
-															icon={<EditOutlined />}
-															onClick={() => handleEdit(link)}
-															size='small'
-														>
-															Sửa
-														</Button>,
-														<Popconfirm
-															title='Xóa footer link'
-															description={`Bạn có chắc chắn muốn xóa link "${link.title}"?`}
-															onConfirm={() => handleDelete(link)}
-															okText='Có'
-															cancelText='Không'
-														>
-															<Button
-																type='text'
-																danger
-																icon={<DeleteOutlined />}
+					{footerColumns.length === 0 ? (
+						<Empty
+							description='Chưa có cột footer nào'
+							image={Empty.PRESENTED_IMAGE_SIMPLE}
+						>
+							<Button
+								type='primary'
+								icon={<SettingOutlined />}
+								onClick={() => window.open('/admin/footer-columns', '_blank')}
+							>
+								Tạo cột footer đầu tiên
+							</Button>
+						</Empty>
+					) : (
+						<Row gutter={[16, 16]}>
+							{footerColumns
+								.sort((a, b) => a.position - b.position)
+								.map(column => (
+									<Col xs={24} sm={12} md={8} lg={6} key={column.id}>
+										<Card
+											size='small'
+											title={
+												<Space>
+													<Tag color='blue'>Cột #{column.position}</Tag>
+													{column.title}
+												</Space>
+											}
+											extra={
+												<Tag color='green'>
+													{groupedLinks[column.id]?.length || 0} links
+												</Tag>
+											}
+										>
+											{groupedLinks[column.id]?.length > 0 ? (
+												<Space direction='vertical' style={{ width: '100%' }}>
+													{groupedLinks[column.id]
+														.sort(
+															(a, b) =>
+																(a.orderPosition || 0) - (b.orderPosition || 0),
+														)
+														.map(link => (
+															<Card
+																key={link.id}
 																size='small'
-																loading={isLoading}
+																style={{ marginBottom: '8px' }}
 															>
-																Xóa
-															</Button>
-														</Popconfirm>,
-													]}
+																<Row justify='space-between' align='middle'>
+																	<Col flex='auto'>
+																		<div>
+																			<Text strong>{link.title}</Text>
+																			<br />
+																			<Text
+																				type='secondary'
+																				style={{ fontSize: '12px' }}
+																			>
+																				{link.url}
+																			</Text>
+																			<br />
+																			<Tag size='small' color='orange'>
+																				Vị trí: {link.orderPosition || 0}
+																			</Tag>
+																		</div>
+																	</Col>
+																	<Col>
+																		<Space direction='vertical' size='small'>
+																			<Button
+																				type='primary'
+																				size='small'
+																				icon={<EditOutlined />}
+																				onClick={() => handleEdit(link)}
+																			/>
+																			<Popconfirm
+																				title='Xóa link'
+																				description='Bạn có chắc chắn muốn xóa link này không?'
+																				onConfirm={() => handleDelete(link)}
+																				okText='Có'
+																				cancelText='Không'
+																			>
+																				<Button
+																					danger
+																					size='small'
+																					icon={<DeleteOutlined />}
+																				/>
+																			</Popconfirm>
+																		</Space>
+																	</Col>
+																</Row>
+															</Card>
+														))}
+												</Space>
+											) : (
+												<Empty
+													description='Chưa có link nào'
+													image={Empty.PRESENTED_IMAGE_SIMPLE}
+													style={{ margin: '16px 0' }}
 												>
-													<Space direction='vertical' style={{ width: '100%' }}>
-														<Text strong>{link.title}</Text>
-														<a
-															href={link.url}
-															target='_blank'
-															rel='noopener noreferrer'
-															style={{ fontSize: '12px' }}
-														>
-															<ExportOutlined /> {link.url}
-														</a>
-													</Space>
-												</Card>
-											))}
-										</Space>
-									) : (
-										<Empty
-											image={Empty.PRESENTED_IMAGE_SIMPLE}
-											description='Chưa có link nào'
-											style={{ margin: '16px 0' }}
-										/>
-									)}
-								</Card>
-							</Col>
-						))}
-					</Row>
+													<Button
+														type='dashed'
+														size='small'
+														icon={<PlusOutlined />}
+														onClick={handleCreateNew}
+													>
+														Thêm link
+													</Button>
+												</Empty>
+											)}
+										</Card>
+									</Col>
+								))}
+						</Row>
+					)}
 				</Card>
 
-				{/* Modal for Create/Edit */}
+				{/* Create/Edit Modal */}
 				<Modal
+					title={editingLink ? 'Chỉnh sửa Footer Link' : 'Thêm Footer Link mới'}
 					open={showCreateModal}
 					onCancel={handleCloseModal}
-					title={
-						<Space>
-							{editingLink ? <EditOutlined /> : <PlusOutlined />}
-							{editingLink ? 'Chỉnh sửa Footer Link' : 'Thêm Footer Link Mới'}
-						</Space>
-					}
 					footer={null}
 					width={600}
 				>
@@ -272,18 +319,17 @@ const Footer = () => {
 						form={form}
 						layout='vertical'
 						onFinish={handleSubmit}
-						initialValues={{
-							column_position: 1,
-						}}
+						requiredMark={false}
 					>
 						<Form.Item
-							label='Tiêu đề'
+							label='Tiêu đề link'
 							name='title'
 							rules={[
 								{ required: true, message: 'Vui lòng nhập tiêu đề link!' },
+								{ min: 2, message: 'Tiêu đề phải có ít nhất 2 ký tự!' },
 							]}
 						>
-							<Input placeholder='Nhập tiêu đề link' />
+							<Input placeholder='Nhập tiêu đề link...' />
 						</Form.Item>
 
 						<Form.Item
@@ -294,39 +340,51 @@ const Footer = () => {
 								{ type: 'url', message: 'URL không hợp lệ!' },
 							]}
 						>
-							<Input placeholder='Nhập URL (VD: https://example.com)' />
+							<Input placeholder='https://example.com' />
 						</Form.Item>
 
-						<Row gutter={16}>
-							<Col span={12}>
-								<Form.Item
-									label='Cột hiển thị'
-									name='column_position'
-									rules={[{ required: true, message: 'Vui lòng chọn cột!' }]}
-								>
-									<Select placeholder='Chọn cột hiển thị'>
-										<Option value={1}>Cột 1</Option>
-										<Option value={2}>Cột 2</Option>
-										<Option value={3}>Cột 3</Option>
-										<Option value={4}>Cột 4</Option>
-									</Select>
-								</Form.Item>
-							</Col>
-							<Col span={12}>
-								<Form.Item label='Tiêu đề cột (tùy chọn)' name='title_column'>
-									<Input placeholder='VD: Dịch vụ, Chính sách...' />
-								</Form.Item>
-							</Col>
-						</Row>
+						<Form.Item
+							label='Cột footer'
+							name='footerColumnId'
+							rules={[{ required: true, message: 'Vui lòng chọn cột footer!' }]}
+						>
+							<Select placeholder='Chọn cột footer'>
+								{footerColumns
+									.sort((a, b) => a.position - b.position)
+									.map(column => (
+										<Option key={column.id} value={column.id}>
+											Cột #{column.position} - {column.title}
+										</Option>
+									))}
+							</Select>
+						</Form.Item>
 
-						<Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+						<Form.Item
+							label='Vị trí trong cột'
+							name='orderPosition'
+							rules={[
+								{
+									type: 'number',
+									min: 0,
+									message: 'Vị trí phải lớn hơn hoặc bằng 0!',
+								},
+							]}
+						>
+							<InputNumber
+								placeholder='Vị trí sắp xếp trong cột (0, 1, 2...)'
+								style={{ width: '100%' }}
+								min={0}
+							/>
+						</Form.Item>
+
+						<div style={{ textAlign: 'right', marginTop: '24px' }}>
 							<Space>
 								<Button onClick={handleCloseModal}>Hủy</Button>
 								<Button type='primary' htmlType='submit' loading={isLoading}>
 									{editingLink ? 'Cập nhật' : 'Tạo mới'}
 								</Button>
 							</Space>
-						</Form.Item>
+						</div>
 					</Form>
 				</Modal>
 			</div>
