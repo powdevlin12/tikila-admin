@@ -5,6 +5,7 @@ export * from './contact';
 export * from './product';
 export * from './starCustomer';
 export * from './serviceRegistration';
+export * from './dashboard';
 
 export interface User {
 	id: string;

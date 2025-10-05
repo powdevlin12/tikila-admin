@@ -20,6 +20,8 @@ export const useApi = <T = unknown>(url: string | null): ApiResponse<T> => {
 		dedupingInterval: 2000,
 	});
 
+	console.log({ data });
+
 	return {
 		data: data as T,
 		loading: !error && !data,

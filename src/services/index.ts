@@ -8,3 +8,4 @@ export { ContactService } from './contactService';
 export { ProductService } from './productService';
 export { StarCustomerService } from './starCustomerService';
 export { ServiceRegistrationService } from './serviceRegistrationService';
+export { dashboardService } from './dashboardService';

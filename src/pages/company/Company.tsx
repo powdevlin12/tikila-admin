@@ -57,6 +57,7 @@ export const Company = () => {
 
 	// Extract data from API responses
 	const companyInfo = companyInfoResponse?.data;
+	console.log({ companyInfoResponse });
 	const contactInfo = contactInfoResponse?.data;
 	// const services = servicesResponse?.data || []; // Commented out since services section is disabled
 

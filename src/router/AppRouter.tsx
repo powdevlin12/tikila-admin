@@ -5,7 +5,13 @@ import {
 	Route,
 	Navigate,
 } from 'react-router-dom';
-import { Users, Products, Footer, CreateEditProduct } from '../pages';
+import {
+	Users,
+	Products,
+	Footer,
+	CreateEditProduct,
+	Dashboard,
+} from '../pages';
 import { StarCustomer } from '../pages/start-customer';
 import { ServiceRegistrations } from '../pages/service-registrations';
 import { Login, Register } from '../pages/login';
@@ -28,7 +34,7 @@ const AppRouter: React.FC = () => {
 					element={
 						<ProtectedRoute>
 							<MainLayout>
-								<Company />
+								<Dashboard />
 							</MainLayout>
 						</ProtectedRoute>
 					}

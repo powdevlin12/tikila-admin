@@ -10,6 +10,9 @@ export const useLoading = (initialState: boolean = false) => {
 	return { loading, startLoading, stopLoading, setLoading };
 };
 
+// Export dashboard hooks
+export * from './useDashboard';
+
 // Custom hook for managing modal state
 export const useModal = (initialState: boolean = false) => {
 	const [isOpen, setIsOpen] = useState(initialState);

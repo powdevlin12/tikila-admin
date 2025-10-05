@@ -1,5 +1,6 @@
 import { apiDelete } from './mutations';
 import apiClient from './api';
+import { triggerDashboardRefresh } from '../hooks/useDashboard';
 import type {
 	ContactCustomer,
 	ContactCustomerListResponse,
@@ -14,9 +15,17 @@ export class ContactService {
 
 	// Xóa contact
 	static async deleteContact(id: number) {
-		return apiDelete<{ message: string }>(`/contact-customer/${id}`, {
-			revalidateKeys: ['/contact-customer'],
-		});
+		const result = await apiDelete<{ message: string }>(
+			`/contact-customer/${id}`,
+			{
+				revalidateKeys: ['/contact-customer'],
+			},
+		);
+
+		// Trigger dashboard refresh after successful deletion
+		triggerDashboardRefresh();
+
+		return result;
 	}
 
 	// Tính toán thống kê
