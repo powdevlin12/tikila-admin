@@ -8,6 +8,7 @@ import {
 	InfoCircleOutlined,
 	HomeOutlined,
 	StarOutlined,
+	CalendarOutlined,
 } from '@ant-design/icons';
 
 interface SidebarProps {
@@ -35,6 +36,11 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 			path: '/admin/star-customers',
 			icon: <StarOutlined />,
 			label: 'Đánh giá khách hàng',
+		},
+		{
+			path: '/admin/service-registrations',
+			icon: <CalendarOutlined />,
+			label: 'Đăng ký dịch vụ',
 		},
 		{
 			path: '/admin/footer',

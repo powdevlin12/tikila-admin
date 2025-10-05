@@ -5,13 +5,9 @@ import {
 	Route,
 	Navigate,
 } from 'react-router-dom';
-import {
-	Users,
-	Products,
-	Footer,
-	CreateEditProduct,
-} from '../pages';
+import { Users, Products, Footer, CreateEditProduct } from '../pages';
 import { StarCustomer } from '../pages/start-customer';
+import { ServiceRegistrations } from '../pages/service-registrations';
 import { Login, Register } from '../pages/login';
 import { ProtectedRoute } from '../components';
 import MainLayout from '../layouts/MainLayout';
@@ -89,6 +85,16 @@ const AppRouter: React.FC = () => {
 						<ProtectedRoute>
 							<MainLayout>
 								<StarCustomer />
+							</MainLayout>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path='/admin/service-registrations'
+					element={
+						<ProtectedRoute>
+							<MainLayout>
+								<ServiceRegistrations />
 							</MainLayout>
 						</ProtectedRoute>
 					}
