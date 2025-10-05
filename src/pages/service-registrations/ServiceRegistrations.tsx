@@ -288,8 +288,8 @@ const ServiceRegistrations: React.FC = () => {
 		},
 		{
 			title: 'Ngày đăng ký',
-			dataIndex: 'registration_date',
-			key: 'registration_date',
+			dataIndex: 'createdAt',
+			key: 'createdAt',
 			width: 120,
 			render: (date: string) => ServiceRegistrationService.formatDate(date),
 		},
