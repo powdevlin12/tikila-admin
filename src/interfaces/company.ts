@@ -1,19 +1,22 @@
 export interface CompanyInfo {
 	id?: number;
 	name?: string;
-	logo_url?: string;
-	intro_text?: string;
+	logoUrl?: string;
+	introText?: string;
 	address?: string;
-	tax_code?: string;
+	taxCode?: string;
 	email?: string;
-	welcome_content?: string;
-	img_intro?: string;
-	COUNT_CUSTOMER?: number;
-	COUNT_CUSTOMER_SATISFY?: number;
-	COUNT_QUANLITY?: number;
-	BANNER?: string;
-	created_at?: string;
-	updated_at?: string;
+	welcomeContent?: string;
+	versionInfo?: number | null;
+	contactId?: number | null;
+	imgIntro?: string;
+	banner?: string;
+	countCustomer?: number;
+	countCustomerSatisfy?: number;
+	countQuality?: number;
+	introTextDetail?: string;
+	createdAt?: string;
+	updatedAt?: string;
 }
 
 export interface CompanyContact {
@@ -37,14 +40,20 @@ export interface Service {
 
 export interface CompanyUpdateRequest {
 	name?: string;
+	logo_url?: string;
 	intro_text?: string;
 	address?: string;
 	tax_code?: string;
 	email?: string;
 	welcome_content?: string;
-	COUNT_CUSTOMER?: number;
-	COUNT_CUSTOMER_SATISFY?: number;
-	COUNT_QUANLITY?: number;
+	version_info?: number;
+	contact_id?: number;
+	img_intro?: string;
+	banner?: string;
+	count_customer?: number;
+	count_customer_satisfy?: number;
+	count_quality?: number;
+	intro_text_detail?: string;
 }
 
 export interface CompanyContactUpdateRequest {

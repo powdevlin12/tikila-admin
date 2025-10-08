@@ -323,7 +323,7 @@ export const Company = () => {
 								<label>Mã số thuế:</label>
 								{editMode ? (
 									<Input
-										value={companyData.tax_code ?? companyInfo.tax_code ?? ''}
+										value={companyData.tax_code ?? companyInfo.taxCode ?? ''}
 										onChange={e =>
 											handleInputChange('tax_code', e.target.value)
 										}
@@ -331,7 +331,7 @@ export const Company = () => {
 									/>
 								) : (
 									<p className='form-value'>
-										{companyInfo.tax_code || 'Chưa có thông tin'}
+										{companyInfo.taxCode || 'Chưa có thông tin'}
 									</p>
 								)}
 							</div>
@@ -344,7 +344,7 @@ export const Company = () => {
 									className='form-textarea'
 									value={
 										companyData.welcome_content ??
-										companyInfo.welcome_content ??
+										companyInfo.welcomeContent ??
 										''
 									}
 									onChange={e =>
@@ -355,7 +355,7 @@ export const Company = () => {
 								/>
 							) : (
 								<p className='form-value'>
-									{companyInfo.welcome_content || 'Chưa có thông tin'}
+									{companyInfo.welcomeContent || 'Chưa có thông tin'}
 								</p>
 							)}
 						</div>
@@ -365,7 +365,7 @@ export const Company = () => {
 							{editMode ? (
 								<textarea
 									className='form-textarea'
-									value={companyData.intro_text ?? companyInfo.intro_text ?? ''}
+									value={companyData.intro_text ?? companyInfo.introText ?? ''}
 									onChange={e =>
 										handleInputChange('intro_text', e.target.value)
 									}
@@ -374,7 +374,7 @@ export const Company = () => {
 								/>
 							) : (
 								<p className='form-value'>
-									{companyInfo.intro_text || 'Chưa có thông tin'}
+									{companyInfo.introText || 'Chưa có thông tin'}
 								</p>
 							)}
 						</div>
@@ -394,19 +394,19 @@ export const Company = () => {
 							<div className='stats-grid'>
 								<div className='stat-item'>
 									<div className='stat-value'>
-										{companyInfo.COUNT_CUSTOMER || 0}
+										{companyInfo.countCustomer || 0}
 									</div>
 									<div className='stat-label'>Khách hàng</div>
 								</div>
 								<div className='stat-item'>
 									<div className='stat-value'>
-										{companyInfo.COUNT_CUSTOMER_SATISFY || 0}%
+										{companyInfo.countCustomerSatisfy || 0}%
 									</div>
 									<div className='stat-label'>Hài lòng</div>
 								</div>
 								<div className='stat-item'>
 									<div className='stat-value'>
-										{companyInfo.COUNT_QUANLITY || 0}%
+										{companyInfo.countQuality || 0}%
 									</div>
 									<div className='stat-label'>Chất lượng</div>
 								</div>
@@ -421,13 +421,13 @@ export const Company = () => {
 									<Input
 										type='number'
 										value={String(
-											companyData.COUNT_CUSTOMER ??
-												companyInfo.COUNT_CUSTOMER ??
+											companyData.count_customer ??
+												companyInfo.countCustomer ??
 												0,
 										)}
 										onChange={e =>
 											handleInputChange(
-												'COUNT_CUSTOMER',
+												'count_customer',
 												parseInt(e.target.value) || 0,
 											)
 										}
@@ -440,13 +440,13 @@ export const Company = () => {
 									<Input
 										type='number'
 										value={String(
-											companyData.COUNT_CUSTOMER_SATISFY ??
-												companyInfo.COUNT_CUSTOMER_SATISFY ??
+											companyData.count_customer_satisfy ??
+												companyInfo.countCustomerSatisfy ??
 												0,
 										)}
 										onChange={e =>
 											handleInputChange(
-												'COUNT_CUSTOMER_SATISFY',
+												'count_customer_satisfy',
 												parseInt(e.target.value) || 0,
 											)
 										}
@@ -459,13 +459,13 @@ export const Company = () => {
 									<Input
 										type='number'
 										value={String(
-											companyData.COUNT_QUANLITY ??
-												companyInfo.COUNT_QUANLITY ??
+											companyData.count_quality ??
+												companyInfo.countQuality ??
 												0,
 										)}
 										onChange={e =>
 											handleInputChange(
-												'COUNT_QUANLITY',
+												'count_quality',
 												parseInt(e.target.value) || 0,
 											)
 										}
@@ -484,9 +484,9 @@ export const Company = () => {
 				<div className='image-grid'>
 					<div className='image-item'>
 						<h3>Logo công ty</h3>
-						{companyInfo.logo_url && (
+						{companyInfo.logoUrl && (
 							<img
-								src={companyInfo.logo_url}
+								src={companyInfo.logoUrl}
 								alt='Logo'
 								className='preview-image'
 							/>
@@ -508,9 +508,9 @@ export const Company = () => {
 
 					<div className='image-item'>
 						<h3>Ảnh giới thiệu</h3>
-						{companyInfo.img_intro && (
+						{companyInfo.imgIntro && (
 							<img
-								src={companyInfo.img_intro}
+								src={companyInfo.imgIntro}
 								alt='Intro'
 								className='preview-image'
 							/>
@@ -532,9 +532,9 @@ export const Company = () => {
 
 					<div className='image-item'>
 						<h3>Banner</h3>
-						{companyInfo.BANNER && (
+						{companyInfo.banner && (
 							<img
-								src={companyInfo.BANNER}
+								src={companyInfo.banner}
 								alt='Banner'
 								className='preview-image'
 							/>
