@@ -21,7 +21,10 @@ import {
 } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDashboardRefreshListener } from '../../hooks';
-import type { DetailedDashboardData } from '../../interfaces';
+import type {
+	DetailedDashboardData,
+	DetailedDashboardResponse,
+} from '../../interfaces';
 import { dashboardService } from '../../services';
 
 const Dashboard: React.FC = () => {
@@ -33,7 +36,8 @@ const Dashboard: React.FC = () => {
 	const fetchDashboardData = useCallback(async () => {
 		try {
 			setLoading(true);
-			const response = await dashboardService.getDetailedDashboardStats();
+			const response =
+				(await dashboardService.getDetailedDashboardStats()) as DetailedDashboardResponse;
 			setDashboardData(response.data);
 		} catch (error) {
 			message.error('Không thể tải dữ liệu dashboard');
