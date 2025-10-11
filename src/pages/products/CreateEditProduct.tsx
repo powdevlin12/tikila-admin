@@ -1,35 +1,34 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import {
-	Form,
-	Input,
-	InputNumber,
-	Button,
-	Card,
-	Space,
-	message,
-	Breadcrumb,
-	Row,
-	Col,
-} from 'antd';
-import {
-	SaveOutlined,
 	ArrowLeftOutlined,
 	InboxOutlined,
+	SaveOutlined,
 } from '@ant-design/icons';
+import {
+	Breadcrumb,
+	Button,
+	Card,
+	Col,
+	Form,
+	Input,
+	Row,
+	Space,
+	message,
+} from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
-import { MainLayout } from '../../layouts';
-import { useApi } from '../../services/hooks';
-import { ProductService } from '../../services';
-import { useAuthStore } from '../../store';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { Product } from '../../interfaces';
+import { MainLayout } from '../../layouts';
+import { ProductService } from '../../services';
+import { useApi } from '../../services/hooks';
+import { useAuthStore } from '../../store';
 import { checkAuthentication, handleApiError } from '../../utils';
 import './CreateEditProduct.css';
 
 // Temporary interface to handle TypeScript cache issue
 interface ProductWithDetailInfo extends Product {
-	detail_info?: string;
+	detailInfo?: string;
 }
 
 interface ProductResponse {
@@ -67,15 +66,15 @@ const CreateEditProduct: React.FC = () => {
 	useEffect(() => {
 		if (isEditing && product) {
 			const productWithDetail = product as ProductWithDetailInfo;
-			setDetailContent(productWithDetail.detail_info || '');
+			setDetailContent(productWithDetail.detailInfo || '');
+
 			form.setFieldsValue({
 				title: product.title,
 				description: product.description,
-				price: product.price,
-				image_url: product.image_url,
+				image_url: product.imageUrl,
 			});
-			if (product.image_url) {
-				setPreviewImage(product.image_url);
+			if (product.imageUrl) {
+				setPreviewImage(product.imageUrl);
 			}
 		}
 	}, [isEditing, product, form]);
@@ -155,7 +154,6 @@ const CreateEditProduct: React.FC = () => {
 		'background',
 		'script',
 		'list',
-		'bullet',
 		'indent',
 		'align',
 		'blockquote',
@@ -169,7 +167,6 @@ const CreateEditProduct: React.FC = () => {
 	const handleSubmitProduct = async (values: {
 		title: string;
 		description: string;
-		price?: number;
 		image_url?: string;
 	}) => {
 		if (!checkAuthentication(isAuthenticated, token)) {
@@ -186,7 +183,6 @@ const CreateEditProduct: React.FC = () => {
 						title: values.title,
 						description: values.description,
 						detail_info: detailContent,
-						price: values.price,
 						image: uploadedFile,
 					});
 				} else {
@@ -195,7 +191,6 @@ const CreateEditProduct: React.FC = () => {
 						title: values.title,
 						description: values.description,
 						detail_info: detailContent,
-						price: values.price,
 						image_url: values.image_url || '',
 					};
 					await ProductService.updateProduct(product.id, productData);
@@ -209,7 +204,6 @@ const CreateEditProduct: React.FC = () => {
 						title: values.title,
 						description: values.description,
 						detail_info: detailContent,
-						price: values.price,
 						image: uploadedFile,
 					});
 				} else {
@@ -218,7 +212,6 @@ const CreateEditProduct: React.FC = () => {
 						title: values.title,
 						description: values.description,
 						detail_info: detailContent,
-						price: values.price,
 						image_url: values.image_url || '',
 					};
 					await ProductService.createProduct(productData);
@@ -255,8 +248,8 @@ const CreateEditProduct: React.FC = () => {
 	// Remove uploaded file
 	const handleRemoveFile = () => {
 		setUploadedFile(null);
-		if (isEditing && product?.image_url) {
-			setPreviewImage(product.image_url);
+		if (isEditing && product?.imageUrl) {
+			setPreviewImage(product.imageUrl);
 		} else {
 			setPreviewImage('');
 		}
@@ -379,24 +372,6 @@ const CreateEditProduct: React.FC = () => {
 									placeholder='Nhập mô tả chi tiết sản phẩm...'
 								/>
 							</div>
-						</Form.Item>
-
-						<Form.Item
-							name='price'
-							label='Giá (VNĐ)'
-							rules={[
-								{ type: 'number', min: 0, message: 'Giá phải lớn hơn 0!' },
-							]}
-						>
-							<InputNumber
-								placeholder='Nhập giá sản phẩm (tùy chọn)'
-								style={{ width: '100%' }}
-								size='large'
-								formatter={value =>
-									`${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-								}
-								parser={value => value!.replace(/\$\s?|(,*)/g, '')}
-							/>
 						</Form.Item>
 
 						{/* Image Upload Section */}

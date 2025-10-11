@@ -4,6 +4,7 @@ import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import type { MenuProps } from 'antd';
+import { calc } from 'antd/es/theme/internal';
 
 const { Title, Text } = Typography;
 
@@ -47,6 +48,7 @@ const Header: React.FC<HeaderProps> = ({ title = 'Admin Dashboard' }) => {
 				display: 'flex',
 				justifyContent: 'space-between',
 				alignItems: 'center',
+				minWidth: 'calc(100vw - 320px)',
 			}}
 		>
 			<Title level={3} style={{ margin: 0, color: '#1890ff' }}>

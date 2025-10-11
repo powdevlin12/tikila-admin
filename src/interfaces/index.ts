@@ -24,9 +24,9 @@ export interface Product {
 	title: string;
 	description: string;
 	price: number;
-	image_url?: string;
-	is_delete: number;
-	created_at: string;
+	imageUrl?: string;
+	isDelete: number;
+	createdAt: string;
 	updatedAt: string;
 }
 

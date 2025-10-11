@@ -1,10 +1,19 @@
 export interface ContactCustomer {
 	id: number;
-	full_name: string;
-	phone_customer: string;
-	message: string;
+	fullName: string;
+	phoneCustomer: string;
+	message: string | null;
+	serviceId?: number | null;
+	createdAt: string;
+	service?: {
+		id: number;
+		title: string;
+	};
+	// Backward compatibility fields for existing code
+	full_name?: string;
+	phone_customer?: string;
 	service_id?: number;
-	created_at: string;
+	created_at?: string;
 	service_title?: string;
 }
 

@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 		{
 			path: '/admin/products',
 			icon: <ShoppingOutlined />,
-			label: 'Sản phẩm',
+			label: 'Dịch vụ',
 		},
 		{
 			path: '/admin/star-customers',

@@ -53,10 +53,10 @@ const Products: React.FC = () => {
 		setIsLoading(true);
 		try {
 			await ProductService.deleteProduct(product.id);
-			message.success('Xóa sản phẩm thành công!');
+			message.success('Xóa dịch vụ thành công!');
 			mutateProducts();
 		} catch (error: unknown) {
-			handleApiError(error, 'Lỗi khi xóa sản phẩm');
+			handleApiError(error, 'Lỗi khi xóa dịch vụ');
 		} finally {
 			setIsLoading(false);
 		}
@@ -94,8 +94,8 @@ const Products: React.FC = () => {
 	const columns = [
 		{
 			title: 'Hình ảnh',
-			dataIndex: 'image_url',
-			key: 'image_url',
+			dataIndex: 'imageUrl',
+			key: 'imageUrl',
 			width: 100,
 			render: (imageUrl: string, record: Product) => (
 				<div style={{ position: 'relative' }}>
@@ -168,7 +168,7 @@ const Products: React.FC = () => {
 			),
 		},
 		{
-			title: 'Tên sản phẩm',
+			title: 'Tên dịch vụ',
 			dataIndex: 'title',
 			key: 'title',
 			sorter: (a: Product, b: Product) => a.title.localeCompare(b.title),
@@ -184,41 +184,30 @@ const Products: React.FC = () => {
 				</div>
 			),
 		},
-		// {
-		// 	title: 'Giá',
-		// 	dataIndex: 'price',
-		// 	key: 'price',
-		// 	sorter: (a: Product, b: Product) => a.price - b.price,
-		// 	render: (price: number) => (
-		// 		<span style={{ fontWeight: 'bold', color: '#1890ff' }}>
-		// 			{price?.toLocaleString('vi-VN')} VNĐ
-		// 		</span>
-		// 	),
-		// },
 		{
 			title: 'Trạng thái',
-			dataIndex: 'is_delete',
-			key: 'is_delete',
+			dataIndex: 'isDelete',
+			key: 'isDelete',
 			filters: [
-				{ text: 'Hoạt động', value: 0 },
-				{ text: 'Không hoạt động', value: 1 },
+				{ text: 'Hoạt động', value: false },
+				{ text: 'Không hoạt động', value: true },
 			],
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			onFilter: (value: any, record: Product) => record.is_delete === value,
-			render: (is_delete: number) => (
-				<Tag color={is_delete === 0 ? 'green' : 'red'}>
-					{is_delete === 0 ? 'Hoạt động' : 'Không hoạt động'}
+			onFilter: (value: any, record: Product) => record.isDelete === value,
+			render: (isDelete: boolean) => (
+				<Tag color={isDelete === false ? 'green' : 'red'}>
+					{isDelete === false ? 'Hoạt động' : 'Không hoạt động'}
 				</Tag>
 			),
 		},
 		{
 			title: 'Ngày tạo',
-			dataIndex: 'created_at',
-			key: 'created_at',
+			dataIndex: 'createdAt',
+			key: 'createdAt',
 			sorter: (a: Product, b: Product) =>
-				new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-			render: (created_at: string) =>
-				new Date(created_at).toLocaleDateString('vi-VN'),
+				new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+			render: (createdAt: string) =>
+				new Date(createdAt).toLocaleDateString('vi-VN'),
 		},
 		{
 			title: 'Thao tác',
@@ -235,7 +224,7 @@ const Products: React.FC = () => {
 						Sửa
 					</Button>
 					<Popconfirm
-						title='Bạn có chắc chắn muốn xóa sản phẩm này?'
+						title='Bạn có chắc chắn muốn xóa dịch vụ này?'
 						onConfirm={() => handleDeleteProduct(record)}
 						okText='Có'
 						cancelText='Không'
@@ -273,7 +262,7 @@ const Products: React.FC = () => {
 					style={{ marginBottom: 16 }}
 				>
 					<Col>
-						<h2 style={{ margin: 0 }}>Quản lý sản phẩm</h2>
+						<h2 style={{ margin: 0 }}>Quản lý dịch vụ</h2>
 					</Col>
 					<Col>
 						<Button
@@ -282,7 +271,7 @@ const Products: React.FC = () => {
 							onClick={handleCreateProduct}
 							size='large'
 						>
-							Thêm sản phẩm mới
+							Thêm dịch vụ mới
 						</Button>
 					</Col>
 				</Row>
@@ -297,7 +286,7 @@ const Products: React.FC = () => {
 						showSizeChanger: true,
 						showQuickJumper: true,
 						showTotal: (total, range) =>
-							`${range[0]}-${range[1]} của ${total} sản phẩm`,
+							`${range[0]}-${range[1]} của ${total} dịch vụ`,
 					}}
 					scroll={{ x: 800 }}
 				/>

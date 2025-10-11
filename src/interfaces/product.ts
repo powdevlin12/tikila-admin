@@ -1,31 +1,35 @@
 export interface Product {
-	id: string;
-	title: string; // Backend uses 'title' not 'name'
+	id: number;
+	title: string;
 	description: string;
-	price?: number;
+	imageUrl?: string;
+	detailInfo?: string | null;
+	isDelete: boolean;
+	createdAt: string;
+	companyId?: number | null;
+	// Backward compatibility fields
 	image_url?: string;
-	detail_info?: string; // Rich text description
-	is_delete: number; // Backend uses is_delete instead of status
-	created_at: string; // Backend uses created_at
+	detail_info?: string;
+	is_delete?: number;
+	created_at?: string;
 	updated_at?: string;
 	company_id?: number;
+	price?: number;
 }
 
 export interface ProductCreateRequest {
-	title: string; // Match backend field name
+	title: string;
 	description: string;
-	detail_info?: string; // Rich text description
-	price?: number;
 	image_url?: string;
+	detail_info?: string;
 	company_id?: number;
 }
 
 export interface ProductUpdateRequest {
-	title?: string; // Match backend field name
+	title?: string;
 	description?: string;
-	detail_info?: string; // Rich text description
-	price?: number;
 	image_url?: string;
+	detail_info?: string;
 	company_id?: number;
 }
 

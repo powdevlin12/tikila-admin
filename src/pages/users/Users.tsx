@@ -2,6 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { useApi } from '../../services';
 import { ContactService } from '../../services/contactService';
 import { handleApiError } from '../../utils/errorHandler';
+import {
+	getContactName,
+	getContactPhone,
+	getContactServiceId,
+	getContactCreatedAt,
+	getContactServiceTitle,
+	getContactMessage,
+} from '../../utils/contactUtils';
 import type { ContactCustomer, ContactStats } from '../../interfaces/contact';
 import { Button, Modal } from '../../components/ui';
 import './Users.styles.css';
@@ -43,16 +51,20 @@ const Users: React.FC = () => {
 		if (searchTerm) {
 			filtered = filtered.filter(
 				contact =>
-					contact.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-					contact.phone_customer.includes(searchTerm) ||
-					contact.message.toLowerCase().includes(searchTerm.toLowerCase()),
+					getContactName(contact)
+						.toLowerCase()
+						.includes(searchTerm.toLowerCase()) ||
+					getContactPhone(contact).includes(searchTerm) ||
+					getContactMessage(contact)
+						.toLowerCase()
+						.includes(searchTerm.toLowerCase()),
 			);
 		}
 
 		// Service filter
 		if (filterByService !== 'all') {
 			filtered = filtered.filter(
-				contact => contact.service_id === filterByService,
+				contact => getContactServiceId(contact) === filterByService,
 			);
 		}
 
@@ -60,10 +72,11 @@ const Users: React.FC = () => {
 		filtered.sort((a, b) => {
 			if (sortBy === 'date') {
 				return (
-					new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+					new Date(getContactCreatedAt(b)).getTime() -
+					new Date(getContactCreatedAt(a)).getTime()
 				);
 			} else {
-				return a.full_name.localeCompare(b.full_name);
+				return getContactName(a).localeCompare(getContactName(b));
 			}
 		});
 
@@ -74,8 +87,10 @@ const Users: React.FC = () => {
 	const services = useMemo(() => {
 		const serviceMap = new Map();
 		contacts.forEach(contact => {
-			if (contact.service_id && contact.service_title) {
-				serviceMap.set(contact.service_id, contact.service_title);
+			const serviceId = getContactServiceId(contact);
+			const serviceTitle = getContactServiceTitle(contact);
+			if (serviceId && serviceTitle) {
+				serviceMap.set(serviceId, serviceTitle);
 			}
 		});
 		return Array.from(serviceMap.entries()).map(([id, title]) => ({
@@ -88,7 +103,7 @@ const Users: React.FC = () => {
 	const handleDeleteContact = async (contact: ContactCustomer) => {
 		if (
 			!window.confirm(
-				`Bạn có chắc chắn muốn xóa liên hệ của ${contact.full_name}?`,
+				`Bạn có chắc chắn muốn xóa liên hệ của ${getContactName(contact)}?`,
 			)
 		) {
 			return;
@@ -253,18 +268,20 @@ const Users: React.FC = () => {
 								{filteredContacts.map(contact => (
 									<tr key={contact.id}>
 										<td>
-											<div className='contact-name'>{contact.full_name}</div>
+											<div className='contact-name'>
+												{getContactName(contact)}
+											</div>
 										</td>
 										<td>
 											<a
-												href={`tel:${contact.phone_customer}`}
+												href={`tel:${getContactPhone(contact)}`}
 												className='phone-link'
 											>
-												{contact.phone_customer}
+												{getContactPhone(contact)}
 											</a>
 										</td>
-										<td>{contact.service_title || 'Tư vấn chung'}</td>
-										<td>{formatDate(contact.created_at)}</td>
+										<td>{getContactServiceTitle(contact) || 'Tư vấn chung'}</td>
+										<td>{formatDate(getContactCreatedAt(contact))}</td>
 										<td>
 											<div className='action-buttons'>
 												<Button onClick={() => handleViewDetail(contact)}>
@@ -297,27 +314,31 @@ const Users: React.FC = () => {
 					<div className='contact-detail'>
 						<div className='detail-row'>
 							<strong>Tên khách hàng:</strong>
-							<span>{selectedContact.full_name}</span>
+							<span>{getContactName(selectedContact)}</span>
 						</div>
 						<div className='detail-row'>
 							<strong>Số điện thoại:</strong>
 							<span>
-								<a href={`tel:${selectedContact.phone_customer}`}>
-									{selectedContact.phone_customer}
+								<a href={`tel:${getContactPhone(selectedContact)}`}>
+									{getContactPhone(selectedContact)}
 								</a>
 							</span>
 						</div>
 						<div className='detail-row'>
 							<strong>Dịch vụ quan tâm:</strong>
-							<span>{selectedContact.service_title || 'Tư vấn chung'}</span>
+							<span>
+								{getContactServiceTitle(selectedContact) || 'Tư vấn chung'}
+							</span>
 						</div>
 						<div className='detail-row'>
 							<strong>Ngày gửi:</strong>
-							<span>{formatDate(selectedContact.created_at)}</span>
+							<span>{formatDate(getContactCreatedAt(selectedContact))}</span>
 						</div>
 						<div className='detail-row'>
 							<strong>Nội dung:</strong>
-							<div className='message-content'>{selectedContact.message}</div>
+							<div className='message-content'>
+								{getContactMessage(selectedContact)}
+							</div>
 						</div>
 					</div>
 				)}
