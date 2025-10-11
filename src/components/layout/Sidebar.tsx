@@ -18,6 +18,12 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 	const menuItems = [
 		{
+			path: '/admin',
+			icon: <DashboardOutlined />,
+			label: 'Dashboard',
+			exact: true,
+		},
+		{
 			path: '/admin/company',
 			icon: <HomeOutlined />,
 			label: 'Công ty',
@@ -40,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 		{
 			path: '/admin/service-registrations',
 			icon: <CalendarOutlined />,
-			label: 'Đăng ký dịch vụ',
+			label: 'Người dùng đăng ký',
 		},
 		{
 			path: '/admin/footer',
@@ -51,12 +57,6 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 			path: '/admin/introduce',
 			icon: <InfoCircleOutlined />,
 			label: 'Giới thiệu',
-		},
-		{
-			path: '/admin',
-			icon: <DashboardOutlined />,
-			label: 'Dashboard',
-			exact: true,
 		},
 	];
 

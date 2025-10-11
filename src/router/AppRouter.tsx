@@ -134,7 +134,7 @@ const AppRouter: React.FC = () => {
 				/>
 
 				{/* Default redirect */}
-				<Route path='/' element={<Navigate to='/admin/company' replace />} />
+				<Route path='/' element={<Navigate to='/admin/' replace />} />
 			</Routes>
 		</Router>
 	);
