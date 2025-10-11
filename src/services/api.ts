@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Tạo axios instance với config mặc định
 const apiClient = axios.create({
-	baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:1236/',
+	baseURL:
+		import.meta.env.VITE_API_BASE_URL || 'https://http://powdevlin68.info/api',
 	timeout: 10000,
 	headers: {
 		'Content-Type': 'application/json',
