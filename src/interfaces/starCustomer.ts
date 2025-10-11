@@ -1,15 +1,15 @@
 export interface StarCustomer {
 	id: number;
 	star: number;
-	name_customer: string;
+	nameCustomer: string;
 	content?: string;
-	created_at: string;
-	updated_at: string;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface CreateStarCustomerPayload {
 	star: number;
-	name_customer: string;
+	nameCustomer: string;
 	content?: string;
 }
 

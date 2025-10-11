@@ -79,7 +79,7 @@ export const StarCustomerPage: React.FC = () => {
 		if (searchTerm) {
 			filtered = filtered.filter(
 				customer =>
-					customer.name_customer
+					customer.nameCustomer
 						.toLowerCase()
 						.includes(searchTerm.toLowerCase()) ||
 					(customer.content &&
@@ -96,10 +96,10 @@ export const StarCustomerPage: React.FC = () => {
 		filtered.sort((a, b) => {
 			if (sortBy === 'date') {
 				return (
-					new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
 				);
 			} else if (sortBy === 'name') {
-				return a.name_customer.localeCompare(b.name_customer);
+				return a.nameCustomer.localeCompare(b.nameCustomer);
 			} else {
 				return b.star - a.star;
 			}
@@ -161,8 +161,8 @@ export const StarCustomerPage: React.FC = () => {
 	const columns = [
 		{
 			title: 'Tên khách hàng',
-			dataIndex: 'name_customer',
-			key: 'name_customer',
+			dataIndex: 'nameCustomer',
+			key: 'nameCustomer',
 			filterable: true,
 		},
 		{
@@ -194,11 +194,11 @@ export const StarCustomerPage: React.FC = () => {
 		},
 		{
 			title: 'Ngày tạo',
-			dataIndex: 'created_at',
-			key: 'created_at',
+			dataIndex: 'createdAt',
+			key: 'createdAt',
 			render: (date: string) => formatDate(date),
 			sorter: (a: StarCustomer, b: StarCustomer) =>
-				new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+				new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 		},
 		{
 			title: 'Thao tác',
@@ -214,7 +214,7 @@ export const StarCustomerPage: React.FC = () => {
 					</Button>
 					<Popconfirm
 						title='Xóa đánh giá'
-						description={`Bạn có chắc chắn muốn xóa đánh giá của ${record.name_customer}?`}
+						description={`Bạn có chắc chắn muốn xóa đánh giá của ${record.nameCustomer}?`}
 						onConfirm={() => handleDeleteStarCustomer(record)}
 						okText='Có'
 						cancelText='Không'
@@ -396,7 +396,7 @@ export const StarCustomerPage: React.FC = () => {
 				>
 					<Form.Item
 						label='Tên khách hàng'
-						name='name_customer'
+						name='nameCustomer'
 						rules={[
 							{ required: true, message: 'Vui lòng nhập tên khách hàng!' },
 						]}
@@ -446,7 +446,7 @@ export const StarCustomerPage: React.FC = () => {
 							<Col span={24}>
 								<strong>Tên khách hàng:</strong>
 								<div style={{ marginTop: '8px' }}>
-									{selectedStarCustomer.name_customer}
+									{selectedStarCustomer.nameCustomer}
 								</div>
 							</Col>
 							<Col span={24}>
@@ -461,7 +461,7 @@ export const StarCustomerPage: React.FC = () => {
 							<Col span={24}>
 								<strong>Ngày tạo:</strong>
 								<div style={{ marginTop: '8px' }}>
-									{formatDate(selectedStarCustomer.created_at)}
+									{formatDate(selectedStarCustomer.createdAt)}
 								</div>
 							</Col>
 							<Col span={24}>
