@@ -48,7 +48,6 @@ export class ProductService {
 			description: data.description,
 			detail_info: data.detail_info,
 			image_url: data.image_url,
-			price: data.price,
 		};
 
 		const response = await apiClient.post<Product>(

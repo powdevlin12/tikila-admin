@@ -252,7 +252,7 @@ const Footer = () => {
 																				{link.url}
 																			</Text>
 																			<br />
-																			<Tag size='small' color='orange'>
+																			<Tag color='orange'>
 																				Vị trí: {link.orderPosition || 0}
 																			</Tag>
 																		</div>

@@ -1,10 +1,9 @@
-import React from 'react';
-import { Typography, Avatar, Dropdown, Space } from 'antd';
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useAuthStore } from '../../store/authStore';
-import { useNavigate } from 'react-router-dom';
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { calc } from 'antd/es/theme/internal';
+import { Avatar, Dropdown, Space, Typography } from 'antd';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 
 const { Title, Text } = Typography;
 

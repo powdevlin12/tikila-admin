@@ -149,7 +149,7 @@ const FooterColumns = () => {
 			title: 'Số lượng links',
 			key: 'linkCount',
 			width: 120,
-			render: (_, record: FooterColumn) => (
+			render: (_: unknown, record: FooterColumn) => (
 				<Tag color='green'>{record.footerLinks?.length || 0} links</Tag>
 			),
 		},
@@ -164,7 +164,7 @@ const FooterColumns = () => {
 			title: 'Thao tác',
 			key: 'actions',
 			width: 150,
-			render: (_, record: FooterColumn) => (
+			render: (_: unknown, record: FooterColumn) => (
 				<Space size='small'>
 					<Button
 						type='primary'

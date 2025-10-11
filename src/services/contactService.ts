@@ -44,15 +44,15 @@ export class ContactService {
 		const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
 		const today = contacts.filter(
-			contact => new Date(contact.created_at) >= startOfToday,
+			contact => new Date(contact.createdAt) >= startOfToday,
 		).length;
 
 		const thisWeek = contacts.filter(
-			contact => new Date(contact.created_at) >= startOfWeek,
+			contact => new Date(contact.createdAt) >= startOfWeek,
 		).length;
 
 		const thisMonth = contacts.filter(
-			contact => new Date(contact.created_at) >= startOfMonth,
+			contact => new Date(contact.createdAt) >= startOfMonth,
 		).length;
 
 		// Group by service

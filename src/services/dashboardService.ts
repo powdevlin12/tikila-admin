@@ -12,7 +12,7 @@ export const dashboardService = {
 	},
 
 	// Get detailed dashboard statistics with additional data
-	getDetailedDashboardStats: async (): Promise<DetailedDashboardResponse> => {
+	getDetailedDashboardStats: async (): Promise<unknown> => {
 		const response = await apiClient.get('/dashboard/detailed');
 		return response;
 	},

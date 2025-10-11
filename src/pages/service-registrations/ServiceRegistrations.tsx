@@ -1,44 +1,43 @@
-import React, { useState } from 'react';
 import {
-	Table,
+	DeleteOutlined,
+	EditOutlined,
+	FilterOutlined,
+	PlusOutlined,
+	ReloadOutlined,
+	WarningOutlined,
+} from '@ant-design/icons';
+import {
+	Alert,
 	Button,
-	Space,
-	Popconfirm,
-	Tag,
 	Card,
-	Row,
 	Col,
-	message,
-	Modal,
+	DatePicker,
 	Form,
 	Input,
-	Select,
-	DatePicker,
 	InputNumber,
+	message,
+	Modal,
+	Popconfirm,
+	Row,
+	Select,
+	Space,
 	Statistic,
-	Alert,
+	Table,
+	Tag,
 } from 'antd';
-import {
-	PlusOutlined,
-	EditOutlined,
-	DeleteOutlined,
-	FilterOutlined,
-	WarningOutlined,
-	ReloadOutlined,
-	CloseOutlined,
-} from '@ant-design/icons';
-import './ServiceRegistrations.css';
-import { useApi } from '../../services/hooks';
-import { ServiceRegistrationService } from '../../services';
-import { useAuthStore } from '../../store';
-import type {
-	ServiceRegistration,
-	CreateServiceRegistrationRequest,
-	UpdateServiceRegistrationRequest,
-	ServiceRegistrationFilter,
-} from '../../interfaces';
-import { checkAuthentication, handleApiError } from '../../utils';
 import type { Dayjs } from 'dayjs';
+import React, { useState } from 'react';
+import type {
+	CreateServiceRegistrationRequest,
+	ServiceRegistration,
+	ServiceRegistrationFilter,
+	UpdateServiceRegistrationRequest,
+} from '../../interfaces';
+import { ServiceRegistrationService } from '../../services';
+import { useApi } from '../../services/hooks';
+import { useAuthStore } from '../../store';
+import { checkAuthentication, handleApiError } from '../../utils';
+import './ServiceRegistrations.css';
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
