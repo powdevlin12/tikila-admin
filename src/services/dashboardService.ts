@@ -1,7 +1,6 @@
 import apiClient from './api';
 import type {
-	DashboardResponse,
-	DetailedDashboardResponse,
+	DashboardResponse
 } from '../interfaces';
 
 export const dashboardService = {
