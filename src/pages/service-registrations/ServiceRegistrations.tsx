@@ -1,6 +1,11 @@
 import {
+	CalendarOutlined,
+	CheckCircleOutlined,
+	ClockCircleOutlined,
 	DeleteOutlined,
+	DollarOutlined,
 	EditOutlined,
+	FileTextOutlined,
 	FilterOutlined,
 	PlusOutlined,
 	ReloadOutlined,
@@ -12,6 +17,7 @@ import {
 	Card,
 	Col,
 	DatePicker,
+	Descriptions,
 	Form,
 	Input,
 	InputNumber,
@@ -888,197 +894,258 @@ const ServiceRegistrations: React.FC = () => {
 				</Form>
 			</Modal>
 
-			{/* Detail Modal */}
+			{/* Detail Modal - Modern Design */}
 			<Modal
-				title='Chi tiết đăng ký dịch vụ'
+				title={null}
 				open={detailModalVisible}
 				onCancel={() => {
 					setDetailModalVisible(false);
 					setSelectedRegistration(null);
 				}}
-				footer={[
-					<Button
-						key='edit'
-						type='primary'
-						onClick={() => {
-							if (selectedRegistration) {
-								setDetailModalVisible(false);
-								openEditModal(selectedRegistration);
-							}
-						}}
-					>
-						Chỉnh sửa
-					</Button>,
-					<Button
-						key='close'
-						onClick={() => {
-							setDetailModalVisible(false);
-							setSelectedRegistration(null);
-						}}
-					>
-						Đóng
-					</Button>,
-				]}
-				width={700}
+				footer={null}
+				width={800}
+				styles={{
+					body: { padding: 0 },
+				}}
 			>
 				{selectedRegistration && (
 					<div>
-						<Row gutter={[16, 16]}>
-							<Col span={12}>
-								<Card size='small' title='Thông tin khách hàng'>
-									<p>
-										<strong>Tên:</strong> {selectedRegistration.customer_name}
-									</p>
-									<p>
-										<strong>Số điện thoại:</strong> {selectedRegistration.phone}
-									</p>
-									<p>
-										<strong>Địa chỉ:</strong>{' '}
-										{selectedRegistration.address || 'Không có'}
-									</p>
-								</Card>
-							</Col>
-							<Col span={12}>
-								<Card size='small' title='Thông tin dịch vụ'>
-									<p>
-										<strong>Thời gian:</strong>{' '}
-										{selectedRegistration.duration_months} tháng
-									</p>
-									<p>
-										<strong>Trạng thái:</strong>
-										<Tag
-											color={ServiceRegistrationService.getStatusColor(
-												selectedRegistration.status,
-											)}
-											style={{ marginLeft: 8 }}
-										>
-											{ServiceRegistrationService.getStatusLabel(
-												selectedRegistration.status,
-											)}
+						{/* Content */}
+						<div style={{ padding: '24px' }}>
+							{/* Progress Bar for Payment */}
+							<Card
+								style={{
+									marginBottom: '16px',
+									borderRadius: '8px',
+									border: '1px solid #f0f0f0',
+								}}
+								bodyStyle={{ padding: '16px' }}
+							>
+								<Typography.Title
+									level={5}
+									style={{
+										marginBottom: '16px',
+										display: 'flex',
+										alignItems: 'center',
+									}}
+								>
+									<DollarOutlined
+										style={{ marginRight: '8px', color: '#1890ff' }}
+									/>
+									Tiến độ thanh toán
+								</Typography.Title>
+								{(() => {
+									const totalAmount = selectedRegistration.amount_due || 0;
+									const paidAmount = selectedRegistration.amount_paid || 0;
+									const remainingAmount = totalAmount - paidAmount;
+
+									return (
+										<>
+											<Row gutter={16}>
+												<Col span={8}>
+													<Statistic
+														title='Tổng tiền'
+														value={totalAmount}
+														precision={0}
+														suffix='VNĐ'
+														valueStyle={{ fontSize: '16px' }}
+													/>
+												</Col>
+												<Col span={8}>
+													<Statistic
+														title='Đã thanh toán'
+														value={paidAmount}
+														precision={0}
+														suffix='VNĐ'
+														valueStyle={{ color: '#3f8600', fontSize: '16px' }}
+													/>
+												</Col>
+												<Col span={8}>
+													<Statistic
+														title='Còn lại'
+														value={remainingAmount}
+														precision={0}
+														suffix='VNĐ'
+														valueStyle={{
+															color:
+																remainingAmount > 0 ? '#cf1322' : '#3f8600',
+															fontSize: '16px',
+														}}
+													/>
+												</Col>
+											</Row>
+										</>
+									);
+								})()}
+							</Card>
+
+							{/* Service Information */}
+							<Card
+								style={{
+									marginBottom: '16px',
+									borderRadius: '8px',
+									border: '1px solid #f0f0f0',
+								}}
+								bodyStyle={{ padding: '20px' }}
+							>
+								<Typography.Title
+									level={5}
+									style={{
+										marginBottom: '16px',
+										display: 'flex',
+										alignItems: 'center',
+									}}
+								>
+									<CalendarOutlined
+										style={{ marginRight: '8px', color: '#52c41a' }}
+									/>
+									Thông tin dịch vụ
+								</Typography.Title>
+								<Descriptions column={2} size='small'>
+									<Descriptions.Item label='Thời gian dịch vụ' span={1}>
+										<Tag color='blue'>
+											{selectedRegistration.duration_months} tháng
 										</Tag>
-									</p>
-									<p>
-										<strong>Ngày đăng ký:</strong>{' '}
+									</Descriptions.Item>
+									<Descriptions.Item label='Ngày đăng ký' span={1}>
 										{ServiceRegistrationService.formatDate(
 											selectedRegistration.registrationDate,
 										)}
-									</p>
-									<p>
-										<strong>Ngày kết thúc:</strong>{' '}
+									</Descriptions.Item>
+									<Descriptions.Item label='Ngày kết thúc' span={1}>
 										{ServiceRegistrationService.formatDate(
 											selectedRegistration.end_date,
 										)}
-									</p>
-								</Card>
-							</Col>
-						</Row>
-
-						<Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-							<Col span={24}>
-								<Card size='small' title='Thông tin thanh toán'>
-									<Row gutter={16}>
-										<Col span={8}>
-											<Statistic
-												title='Tổng tiền phải trả'
-												value={selectedRegistration.amount_due || 0}
-												suffix='VNĐ'
-												precision={0}
-											/>
-										</Col>
-										<Col span={8}>
-											<Statistic
-												title='Đã thanh toán'
-												value={selectedRegistration.amount_paid || 0}
-												suffix='VNĐ'
-												precision={0}
-												valueStyle={{ color: '#3f8600' }}
-											/>
-										</Col>
-										<Col span={8}>
-											<Statistic
-												title='Còn lại'
-												value={
-													(selectedRegistration.amount_due || 0) -
-													(selectedRegistration.amount_paid || 0)
-												}
-												suffix='VNĐ'
-												precision={0}
-												valueStyle={{
-													color:
-														(selectedRegistration.amount_due || 0) -
-															(selectedRegistration.amount_paid || 0) >
-														0
-															? '#cf1322'
-															: '#3f8600',
-												}}
-											/>
-										</Col>
-									</Row>
-								</Card>
-							</Col>
-						</Row>
-
-						<Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-							<Col span={24}>
-								<Card size='small' title='Thời gian'>
-									<Row gutter={16}>
-										<Col span={12}>
-											<p>
-												<strong>Ngày tạo:</strong>{' '}
-												{ServiceRegistrationService.formatDate(
-													selectedRegistration.createdAt,
-												)}
-											</p>
-											<p>
-												<strong>Ngày cập nhật:</strong>{' '}
-												{ServiceRegistrationService.formatDate(
-													selectedRegistration.updatedAt,
-												)}
-											</p>
-										</Col>
-										<Col span={12}>
-											{(() => {
-												const daysLeft =
-													ServiceRegistrationService.calculateDaysUntilExpiration(
-														selectedRegistration.end_date,
-													);
-												return (
-													<>
-														<p>
-															<strong>Thời gian còn lại:</strong>
-														</p>
-														<Tag
-															color={
-																daysLeft <= 0
-																	? 'red'
-																	: daysLeft <= 30
-																	? 'orange'
-																	: 'green'
-															}
-															style={{ fontSize: '16px', padding: '4px 8px' }}
-														>
-															{daysLeft <= 0
-																? 'Đã hết hạn'
-																: `${daysLeft} ngày`}
-														</Tag>
-													</>
+									</Descriptions.Item>
+									<Descriptions.Item label='Thời gian còn lại' span={1}>
+										{(() => {
+											const daysLeft =
+												ServiceRegistrationService.calculateDaysUntilExpiration(
+													selectedRegistration.end_date,
 												);
-											})()}
-										</Col>
-									</Row>
-								</Card>
-							</Col>
-						</Row>
+											return (
+												<Tag
+													color={
+														daysLeft <= 0
+															? 'red'
+															: daysLeft <= 30
+															? 'orange'
+															: 'green'
+													}
+													icon={<ClockCircleOutlined />}
+												>
+													{daysLeft <= 0 ? 'Đã hết hạn' : `${daysLeft} ngày`}
+												</Tag>
+											);
+										})()}
+									</Descriptions.Item>
+								</Descriptions>
+							</Card>
 
-						{selectedRegistration.notes && (
-							<Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-								<Col span={24}>
-									<Card size='small' title='Ghi chú'>
-										<p>{selectedRegistration.notes}</p>
-									</Card>
-								</Col>
-							</Row>
-						)}
+							{/* Timeline */}
+							<Card
+								style={{
+									marginBottom: '16px',
+									borderRadius: '8px',
+									border: '1px solid #f0f0f0',
+								}}
+								bodyStyle={{ padding: '20px' }}
+							>
+								<Typography.Title
+									level={5}
+									style={{
+										marginBottom: '16px',
+										display: 'flex',
+										alignItems: 'center',
+									}}
+								>
+									<CheckCircleOutlined
+										style={{ marginRight: '8px', color: '#722ed1' }}
+									/>
+									Lịch sử
+								</Typography.Title>
+								<Descriptions column={1} size='small'>
+									<Descriptions.Item label='Ngày tạo'>
+										{ServiceRegistrationService.formatDate(
+											selectedRegistration.createdAt,
+										)}
+									</Descriptions.Item>
+									<Descriptions.Item label='Lần cập nhật cuối'>
+										{ServiceRegistrationService.formatDate(
+											selectedRegistration.updatedAt,
+										)}
+									</Descriptions.Item>
+								</Descriptions>
+							</Card>
+
+							{/* Notes */}
+							{selectedRegistration.notes && (
+								<Card
+									style={{
+										marginBottom: '16px',
+										borderRadius: '8px',
+										border: '1px solid #f0f0f0',
+									}}
+									bodyStyle={{ padding: '20px' }}
+								>
+									<Typography.Title
+										level={5}
+										style={{
+											marginBottom: '16px',
+											display: 'flex',
+											alignItems: 'center',
+										}}
+									>
+										<FileTextOutlined
+											style={{ marginRight: '8px', color: '#fa8c16' }}
+										/>
+										Ghi chú
+									</Typography.Title>
+									<Typography.Paragraph
+										style={{
+											margin: 0,
+											padding: '12px',
+											backgroundColor: '#fafafa',
+											borderRadius: '6px',
+										}}
+									>
+										{selectedRegistration.notes}
+									</Typography.Paragraph>
+								</Card>
+							)}
+						</div>
+
+						{/* Footer Actions */}
+						<div
+							style={{
+								padding: '16px 24px',
+								borderTop: '1px solid #f0f0f0',
+								display: 'flex',
+								justifyContent: 'flex-end',
+								gap: '8px',
+							}}
+						>
+							<Button
+								onClick={() => {
+									setDetailModalVisible(false);
+									setSelectedRegistration(null);
+								}}
+							>
+								Đóng
+							</Button>
+							<Button
+								type='primary'
+								icon={<EditOutlined />}
+								onClick={() => {
+									if (selectedRegistration) {
+										setDetailModalVisible(false);
+										openEditModal(selectedRegistration);
+									}
+								}}
+							>
+								Chỉnh sửa
+							</Button>
+						</div>
 					</div>
 				)}
 			</Modal>
