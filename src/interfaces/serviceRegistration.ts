@@ -4,12 +4,14 @@ export interface ServiceRegistration {
 	phone: string;
 	address?: string;
 	notes?: string;
-	registration_date: string; // ISO date string
+	registrationDate: string; // ISO date string
 	duration_months: number;
 	end_date: string; // ISO date string
 	status: 'active' | 'expired' | 'cancelled';
-	created_at: string;
-	updated_at: string;
+	amount_paid: number;
+	amount_due: number;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface CreateServiceRegistrationRequest {
@@ -18,6 +20,8 @@ export interface CreateServiceRegistrationRequest {
 	address?: string;
 	notes?: string;
 	duration_months: number;
+	amount_paid?: number;
+	amount_due?: number;
 }
 
 export interface UpdateServiceRegistrationRequest {
@@ -27,6 +31,8 @@ export interface UpdateServiceRegistrationRequest {
 	notes?: string;
 	duration_months?: number;
 	status?: 'active' | 'expired' | 'cancelled';
+	amount_paid?: number;
+	amount_due?: number;
 }
 
 export interface ServiceRegistrationFilter {
@@ -36,6 +42,7 @@ export interface ServiceRegistrationFilter {
 	end_date?: string;
 	page?: number;
 	limit?: number;
+	payment_status?: string;
 }
 
 export interface ServiceRegistrationListResponse {
@@ -62,6 +69,11 @@ export interface ServiceRegistrationStats {
 	expired: number;
 	cancelled: number;
 	expiring_soon: number;
+	payment_stats: {
+		paid: number;
+		unpaid: number;
+		partial: number;
+	};
 }
 
 export interface ServiceRegistrationStatsResponse {

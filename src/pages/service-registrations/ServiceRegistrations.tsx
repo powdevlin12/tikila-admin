@@ -24,6 +24,7 @@ import {
 	Statistic,
 	Table,
 	Tag,
+	Typography,
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import React, { useState } from 'react';
@@ -41,13 +42,17 @@ import './ServiceRegistrations.css';
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
+const { Text } = Typography;
 
 const ServiceRegistrations: React.FC = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [createModalVisible, setCreateModalVisible] = useState(false);
 	const [editModalVisible, setEditModalVisible] = useState(false);
 	const [filterModalVisible, setFilterModalVisible] = useState(false);
+	const [detailModalVisible, setDetailModalVisible] = useState(false);
 	const [editingRegistration, setEditingRegistration] =
+		useState<ServiceRegistration | null>(null);
+	const [selectedRegistration, setSelectedRegistration] =
 		useState<ServiceRegistration | null>(null);
 	const [filters, setFilters] = useState<ServiceRegistrationFilter>({});
 	const [createForm] = Form.useForm();
@@ -89,6 +94,7 @@ const ServiceRegistrations: React.FC = () => {
 
 	// Extract data from API response
 	const registrations = registrationsResponse?.data?.data || [];
+	console.log({ registrations });
 	const pagination = registrationsResponse?.data || {
 		total: 0,
 		page: 1,
@@ -101,6 +107,26 @@ const ServiceRegistrations: React.FC = () => {
 		expired: 0,
 		cancelled: 0,
 		expiring_soon: 0,
+	};
+
+	// Add payment_stats safely
+	const paymentStats = (
+		statsResponse?.data as {
+			total: number;
+			active: number;
+			expired: number;
+			cancelled: number;
+			expiring_soon: number;
+			payment_stats?: {
+				paid: number;
+				unpaid: number;
+				partial: number;
+			};
+		}
+	)?.payment_stats || {
+		paid: 0,
+		unpaid: 0,
+		partial: 0,
 	};
 
 	// Handle create service registration
@@ -178,6 +204,7 @@ const ServiceRegistrations: React.FC = () => {
 		status?: string;
 		expiring_in_days?: number;
 		date_range?: [Dayjs, Dayjs];
+		payment_status?: string;
 	}) => {
 		const newFilters: ServiceRegistrationFilter = {};
 
@@ -188,6 +215,8 @@ const ServiceRegistrations: React.FC = () => {
 			newFilters.start_date = values.date_range[0].format('YYYY-MM-DD');
 			newFilters.end_date = values.date_range[1].format('YYYY-MM-DD');
 		}
+		if (values.payment_status)
+			newFilters.payment_status = values.payment_status;
 
 		setFilters(newFilters);
 		setFilterModalVisible(false);
@@ -227,6 +256,16 @@ const ServiceRegistrations: React.FC = () => {
 				return ServiceRegistrationService.getStatusLabel(value as string);
 			case 'expiring_in_days':
 				return `Sắp hết hạn trong ${value} ngày`;
+			case 'payment_status': {
+				const paymentLabels = {
+					paid: 'Đã thanh toán đủ',
+					unpaid: 'Chưa thanh toán',
+					partial: 'Thanh toán một phần',
+				};
+				return (
+					paymentLabels[value as keyof typeof paymentLabels] || String(value)
+				);
+			}
 			case 'start_date': {
 				const endDate = filters.end_date;
 				return `Từ ${ServiceRegistrationService.formatDate(
@@ -243,6 +282,12 @@ const ServiceRegistrations: React.FC = () => {
 	// Check if any filters are active
 	const hasActiveFilters = Object.keys(filters).length > 0;
 
+	// Open detail modal
+	const openDetailModal = (registration: ServiceRegistration) => {
+		setSelectedRegistration(registration);
+		setDetailModalVisible(true);
+	};
+
 	// Open edit modal
 	const openEditModal = (registration: ServiceRegistration) => {
 		setEditingRegistration(registration);
@@ -253,11 +298,13 @@ const ServiceRegistrations: React.FC = () => {
 			notes: registration.notes,
 			duration_months: registration.duration_months,
 			status: registration.status,
+			amount_paid: registration.amount_paid,
+			amount_due: registration.amount_due,
 		});
 		setEditModalVisible(true);
 	};
 
-	// Table columns
+	// Table columns - Simplified version with only important info
 	const columns = [
 		{
 			title: 'Tên khách hàng',
@@ -266,36 +313,16 @@ const ServiceRegistrations: React.FC = () => {
 			width: 200,
 		},
 		{
-			title: 'Số điện thoại',
-			dataIndex: 'phone',
-			key: 'phone',
-			width: 120,
-		},
-		{
 			title: 'Địa chỉ',
 			dataIndex: 'address',
 			key: 'address',
-			width: 200,
+			width: 250,
 			ellipsis: true,
 		},
 		{
-			title: 'Thời gian',
-			dataIndex: 'duration_months',
-			key: 'duration_months',
-			width: 100,
-			render: (months: number) => `${months} tháng`,
-		},
-		{
 			title: 'Ngày đăng ký',
-			dataIndex: 'createdAt',
-			key: 'createdAt',
-			width: 120,
-			render: (date: string) => ServiceRegistrationService.formatDate(date),
-		},
-		{
-			title: 'Ngày kết thúc',
-			dataIndex: 'end_date',
-			key: 'end_date',
+			dataIndex: 'registrationDate',
+			key: 'registrationDate',
 			width: 120,
 			render: (date: string) => ServiceRegistrationService.formatDate(date),
 		},
@@ -319,15 +346,38 @@ const ServiceRegistrations: React.FC = () => {
 			},
 		},
 		{
+			title: 'Tiền phải trả',
+			dataIndex: 'amount_due',
+			key: 'amount_due',
+			width: 130,
+			render: (amount: number | string) => {
+				const numAmount = Number(amount);
+				return numAmount ? `${numAmount.toLocaleString('vi-VN')} VNĐ` : '0 VNĐ';
+			},
+		},
+		{
+			title: 'Đã thanh toán',
+			dataIndex: 'amount_paid',
+			key: 'amount_paid',
+			width: 130,
+			render: (amount: number | string) => {
+				const numAmount = Number(amount);
+				return numAmount ? `${numAmount.toLocaleString('vi-VN')} VNĐ` : '0 VNĐ';
+			},
+		},
+		{
 			title: 'Trạng thái',
 			dataIndex: 'status',
 			key: 'status',
-			width: 120,
-			render: (status: string) => (
-				<Tag color={ServiceRegistrationService.getStatusColor(status)}>
-					{ServiceRegistrationService.getStatusLabel(status)}
-				</Tag>
-			),
+			width: 130,
+			render: (status: 'active' | 'expired' | 'cancelled') => {
+				// ServiceRegistrationService.getStatusLabel(status),
+				return (
+					<Text type={status === 'active' ? 'success' : 'danger'}>
+						{ServiceRegistrationService.getStatusLabel(status)}
+					</Text>
+				);
+			},
 		},
 		{
 			title: 'Thao tác',
@@ -389,6 +439,37 @@ const ServiceRegistrations: React.FC = () => {
 							title='Đã hết hạn'
 							value={stats.expired}
 							valueStyle={{ color: '#cf1322' }}
+						/>
+					</Card>
+				</Col>
+			</Row>
+
+			{/* Payment Statistics Cards */}
+			<Row gutter={16} style={{ marginBottom: 24 }}>
+				<Col span={8}>
+					<Card>
+						<Statistic
+							title='Đã thanh toán đủ'
+							value={paymentStats.paid}
+							valueStyle={{ color: '#3f8600' }}
+						/>
+					</Card>
+				</Col>
+				<Col span={8}>
+					<Card>
+						<Statistic
+							title='Chưa thanh toán'
+							value={paymentStats.unpaid}
+							valueStyle={{ color: '#cf1322' }}
+						/>
+					</Card>
+				</Col>
+				<Col span={8}>
+					<Card>
+						<Statistic
+							title='Thanh toán một phần'
+							value={paymentStats.partial}
+							valueStyle={{ color: '#fa8c16' }}
 						/>
 					</Card>
 				</Col>
@@ -513,7 +594,13 @@ const ServiceRegistrations: React.FC = () => {
 						showTotal: (total, range) =>
 							`${range[0]}-${range[1]} của ${total} mục`,
 					}}
-					scroll={{ x: 1200 }}
+					scroll={{ x: 1000 }}
+					onRow={record => {
+						return {
+							onClick: () => openDetailModal(record),
+							style: { cursor: 'pointer' },
+						};
+					}}
 				/>
 			</Card>
 
@@ -580,6 +667,47 @@ const ServiceRegistrations: React.FC = () => {
 					<Form.Item name='notes' label='Ghi chú'>
 						<Input.TextArea rows={3} placeholder='Nhập ghi chú' />
 					</Form.Item>
+
+					<Row gutter={16}>
+						<Col span={12}>
+							<Form.Item
+								name='amount_due'
+								label='Số tiền phải trả (VNĐ)'
+								rules={[
+									{ required: false },
+									{ type: 'number', min: 0, message: 'Số tiền phải >= 0' },
+								]}
+							>
+								<InputNumber
+									min={0}
+									placeholder='Nhập số tiền phải trả'
+									style={{ width: '100%' }}
+									formatter={value =>
+										`${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+									}
+								/>
+							</Form.Item>
+						</Col>
+						<Col span={12}>
+							<Form.Item
+								name='amount_paid'
+								label='Số tiền đã thanh toán (VNĐ)'
+								rules={[
+									{ required: false },
+									{ type: 'number', min: 0, message: 'Số tiền phải >= 0' },
+								]}
+							>
+								<InputNumber
+									min={0}
+									placeholder='Nhập số tiền đã thanh toán'
+									style={{ width: '100%' }}
+									formatter={value =>
+										`${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+									}
+								/>
+							</Form.Item>
+						</Col>
+					</Row>
 				</Form>
 			</Modal>
 
@@ -659,6 +787,47 @@ const ServiceRegistrations: React.FC = () => {
 					<Form.Item name='notes' label='Ghi chú'>
 						<Input.TextArea rows={3} placeholder='Nhập ghi chú' />
 					</Form.Item>
+
+					<Row gutter={16}>
+						<Col span={12}>
+							<Form.Item
+								name='amount_due'
+								label='Số tiền phải trả (VNĐ)'
+								rules={[
+									{ required: false },
+									{ type: 'number', min: 0, message: 'Số tiền phải >= 0' },
+								]}
+							>
+								<InputNumber
+									min={0}
+									placeholder='Nhập số tiền phải trả'
+									style={{ width: '100%' }}
+									formatter={value =>
+										`${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+									}
+								/>
+							</Form.Item>
+						</Col>
+						<Col span={12}>
+							<Form.Item
+								name='amount_paid'
+								label='Số tiền đã thanh toán (VNĐ)'
+								rules={[
+									{ required: false },
+									{ type: 'number', min: 0, message: 'Số tiền phải >= 0' },
+								]}
+							>
+								<InputNumber
+									min={0}
+									placeholder='Nhập số tiền đã thanh toán'
+									style={{ width: '100%' }}
+									formatter={value =>
+										`${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+									}
+								/>
+							</Form.Item>
+						</Col>
+					</Row>
 				</Form>
 			</Modal>
 
@@ -708,7 +877,210 @@ const ServiceRegistrations: React.FC = () => {
 							placeholder={['Từ ngày', 'Đến ngày']}
 						/>
 					</Form.Item>
+
+					<Form.Item name='payment_status' label='Trạng thái thanh toán'>
+						<Select placeholder='Chọn trạng thái thanh toán' allowClear>
+							<Option value='paid'>Đã thanh toán đủ</Option>
+							<Option value='unpaid'>Chưa thanh toán</Option>
+							<Option value='partial'>Thanh toán một phần</Option>
+						</Select>
+					</Form.Item>
 				</Form>
+			</Modal>
+
+			{/* Detail Modal */}
+			<Modal
+				title='Chi tiết đăng ký dịch vụ'
+				open={detailModalVisible}
+				onCancel={() => {
+					setDetailModalVisible(false);
+					setSelectedRegistration(null);
+				}}
+				footer={[
+					<Button
+						key='edit'
+						type='primary'
+						onClick={() => {
+							if (selectedRegistration) {
+								setDetailModalVisible(false);
+								openEditModal(selectedRegistration);
+							}
+						}}
+					>
+						Chỉnh sửa
+					</Button>,
+					<Button
+						key='close'
+						onClick={() => {
+							setDetailModalVisible(false);
+							setSelectedRegistration(null);
+						}}
+					>
+						Đóng
+					</Button>,
+				]}
+				width={700}
+			>
+				{selectedRegistration && (
+					<div>
+						<Row gutter={[16, 16]}>
+							<Col span={12}>
+								<Card size='small' title='Thông tin khách hàng'>
+									<p>
+										<strong>Tên:</strong> {selectedRegistration.customer_name}
+									</p>
+									<p>
+										<strong>Số điện thoại:</strong> {selectedRegistration.phone}
+									</p>
+									<p>
+										<strong>Địa chỉ:</strong>{' '}
+										{selectedRegistration.address || 'Không có'}
+									</p>
+								</Card>
+							</Col>
+							<Col span={12}>
+								<Card size='small' title='Thông tin dịch vụ'>
+									<p>
+										<strong>Thời gian:</strong>{' '}
+										{selectedRegistration.duration_months} tháng
+									</p>
+									<p>
+										<strong>Trạng thái:</strong>
+										<Tag
+											color={ServiceRegistrationService.getStatusColor(
+												selectedRegistration.status,
+											)}
+											style={{ marginLeft: 8 }}
+										>
+											{ServiceRegistrationService.getStatusLabel(
+												selectedRegistration.status,
+											)}
+										</Tag>
+									</p>
+									<p>
+										<strong>Ngày đăng ký:</strong>{' '}
+										{ServiceRegistrationService.formatDate(
+											selectedRegistration.registrationDate,
+										)}
+									</p>
+									<p>
+										<strong>Ngày kết thúc:</strong>{' '}
+										{ServiceRegistrationService.formatDate(
+											selectedRegistration.end_date,
+										)}
+									</p>
+								</Card>
+							</Col>
+						</Row>
+
+						<Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+							<Col span={24}>
+								<Card size='small' title='Thông tin thanh toán'>
+									<Row gutter={16}>
+										<Col span={8}>
+											<Statistic
+												title='Tổng tiền phải trả'
+												value={selectedRegistration.amount_due || 0}
+												suffix='VNĐ'
+												precision={0}
+											/>
+										</Col>
+										<Col span={8}>
+											<Statistic
+												title='Đã thanh toán'
+												value={selectedRegistration.amount_paid || 0}
+												suffix='VNĐ'
+												precision={0}
+												valueStyle={{ color: '#3f8600' }}
+											/>
+										</Col>
+										<Col span={8}>
+											<Statistic
+												title='Còn lại'
+												value={
+													(selectedRegistration.amount_due || 0) -
+													(selectedRegistration.amount_paid || 0)
+												}
+												suffix='VNĐ'
+												precision={0}
+												valueStyle={{
+													color:
+														(selectedRegistration.amount_due || 0) -
+															(selectedRegistration.amount_paid || 0) >
+														0
+															? '#cf1322'
+															: '#3f8600',
+												}}
+											/>
+										</Col>
+									</Row>
+								</Card>
+							</Col>
+						</Row>
+
+						<Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+							<Col span={24}>
+								<Card size='small' title='Thời gian'>
+									<Row gutter={16}>
+										<Col span={12}>
+											<p>
+												<strong>Ngày tạo:</strong>{' '}
+												{ServiceRegistrationService.formatDate(
+													selectedRegistration.createdAt,
+												)}
+											</p>
+											<p>
+												<strong>Ngày cập nhật:</strong>{' '}
+												{ServiceRegistrationService.formatDate(
+													selectedRegistration.updatedAt,
+												)}
+											</p>
+										</Col>
+										<Col span={12}>
+											{(() => {
+												const daysLeft =
+													ServiceRegistrationService.calculateDaysUntilExpiration(
+														selectedRegistration.end_date,
+													);
+												return (
+													<>
+														<p>
+															<strong>Thời gian còn lại:</strong>
+														</p>
+														<Tag
+															color={
+																daysLeft <= 0
+																	? 'red'
+																	: daysLeft <= 30
+																	? 'orange'
+																	: 'green'
+															}
+															style={{ fontSize: '16px', padding: '4px 8px' }}
+														>
+															{daysLeft <= 0
+																? 'Đã hết hạn'
+																: `${daysLeft} ngày`}
+														</Tag>
+													</>
+												);
+											})()}
+										</Col>
+									</Row>
+								</Card>
+							</Col>
+						</Row>
+
+						{selectedRegistration.notes && (
+							<Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+								<Col span={24}>
+									<Card size='small' title='Ghi chú'>
+										<p>{selectedRegistration.notes}</p>
+									</Card>
+								</Col>
+							</Row>
+						)}
+					</div>
+				)}
 			</Modal>
 		</div>
 	);
