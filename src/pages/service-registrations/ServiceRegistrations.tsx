@@ -33,6 +33,7 @@ import {
 	Typography,
 } from 'antd';
 import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import type {
 	CreateServiceRegistrationRequest,
@@ -86,7 +87,7 @@ const ServiceRegistrations: React.FC = () => {
 	);
 
 	// Fetch statistics
-	const { data: statsResponse } = useApi<{
+	const { data: statsResponse, mutate: mutateStats } = useApi<{
 		success: boolean;
 		message: string;
 		data: {
@@ -137,7 +138,7 @@ const ServiceRegistrations: React.FC = () => {
 
 	// Handle create service registration
 	const handleCreateRegistration = async (
-		values: CreateServiceRegistrationRequest,
+		values: CreateServiceRegistrationRequest & { registration_date?: Dayjs },
 	) => {
 		if (!checkAuthentication(isAuthenticated, token)) {
 			return;
@@ -145,11 +146,23 @@ const ServiceRegistrations: React.FC = () => {
 
 		try {
 			setIsLoading(true);
-			await ServiceRegistrationService.createServiceRegistration(values);
+
+			// Format the registration_date to ISO string if provided
+			const formattedValues = {
+				...values,
+				registration_date: values.registration_date
+					? dayjs(values.registration_date).format('YYYY-MM-DD')
+					: undefined,
+			};
+
+			await ServiceRegistrationService.createServiceRegistration(
+				formattedValues,
+			);
 			message.success('Tạo đăng ký dịch vụ thành công');
 			setCreateModalVisible(false);
 			createForm.resetFields();
 			mutateRegistrations();
+			mutateStats();
 		} catch (error) {
 			handleApiError(error, 'Lỗi khi tạo đăng ký dịch vụ');
 		} finally {
@@ -159,7 +172,7 @@ const ServiceRegistrations: React.FC = () => {
 
 	// Handle edit service registration
 	const handleEditRegistration = async (
-		values: UpdateServiceRegistrationRequest,
+		values: UpdateServiceRegistrationRequest & { registration_date?: Dayjs },
 	) => {
 		if (!checkAuthentication(isAuthenticated, token) || !editingRegistration) {
 			return;
@@ -167,15 +180,25 @@ const ServiceRegistrations: React.FC = () => {
 
 		try {
 			setIsLoading(true);
+
+			// Format the registration_date to ISO string if provided
+			const formattedValues = {
+				...values,
+				registration_date: values.registration_date
+					? dayjs(values.registration_date).format('YYYY-MM-DD')
+					: undefined,
+			};
+
 			await ServiceRegistrationService.updateServiceRegistration(
 				editingRegistration.id,
-				values,
+				formattedValues,
 			);
 			message.success('Cập nhật đăng ký dịch vụ thành công');
 			setEditModalVisible(false);
 			setEditingRegistration(null);
 			editForm.resetFields();
 			mutateRegistrations();
+			mutateStats();
 		} catch (error) {
 			handleApiError(error, 'Lỗi khi cập nhật đăng ký dịch vụ');
 		} finally {
@@ -198,6 +221,7 @@ const ServiceRegistrations: React.FC = () => {
 			);
 			message.success('Xóa đăng ký dịch vụ thành công');
 			mutateRegistrations();
+			mutateStats();
 		} catch (error) {
 			handleApiError(error, 'Lỗi khi xóa đăng ký dịch vụ');
 		} finally {
@@ -302,10 +326,13 @@ const ServiceRegistrations: React.FC = () => {
 			phone: registration.phone,
 			address: registration.address,
 			notes: registration.notes,
+			registration_date: registration.registrationDate
+				? dayjs(registration.registrationDate)
+				: null,
 			duration_months: registration.duration_months,
 			status: registration.status,
-			amount_paid: registration.amount_paid,
-			amount_due: registration.amount_due,
+			amount_paid: Number(registration.amount_paid),
+			amount_due: Number(registration.amount_due),
 		});
 		setEditModalVisible(true);
 	};
@@ -330,6 +357,12 @@ const ServiceRegistrations: React.FC = () => {
 			dataIndex: 'registrationDate',
 			key: 'registrationDate',
 			width: 120,
+			sorter: (a: ServiceRegistration, b: ServiceRegistration) => {
+				const dateA = new Date(a.registrationDate || '').getTime();
+				const dateB = new Date(b.registrationDate || '').getTime();
+				return dateA - dateB;
+			},
+			sortDirections: ['ascend' as const, 'descend' as const],
 			render: (date: string) => ServiceRegistrationService.formatDate(date),
 		},
 		{
@@ -337,6 +370,14 @@ const ServiceRegistrations: React.FC = () => {
 			dataIndex: 'end_date',
 			key: 'days_left',
 			width: 100,
+			sorter: (a: ServiceRegistration, b: ServiceRegistration) => {
+				const daysLeftA =
+					ServiceRegistrationService.calculateDaysUntilExpiration(a.end_date);
+				const daysLeftB =
+					ServiceRegistrationService.calculateDaysUntilExpiration(b.end_date);
+				return daysLeftA - daysLeftB;
+			},
+			sortDirections: ['ascend' as const, 'descend' as const],
 			render: (endDate: string) => {
 				const daysLeft =
 					ServiceRegistrationService.calculateDaysUntilExpiration(endDate);
@@ -376,6 +417,12 @@ const ServiceRegistrations: React.FC = () => {
 			dataIndex: 'status',
 			key: 'status',
 			width: 130,
+			sorter: (a: ServiceRegistration, b: ServiceRegistration) => {
+				// Order: active > expired > cancelled
+				const order = { active: 3, expired: 2, cancelled: 1 };
+				return order[a.status] - order[b.status];
+			},
+			sortDirections: ['ascend' as const, 'descend' as const],
 			render: (status: 'active' | 'expired' | 'cancelled') => {
 				// ServiceRegistrationService.getStatusLabel(status),
 				return (
@@ -390,11 +437,13 @@ const ServiceRegistrations: React.FC = () => {
 			key: 'actions',
 			width: 150,
 			render: (_: unknown, record: ServiceRegistration) => (
-				<Space size='small'>
+				<Space size='small' onClick={e => e.stopPropagation()}>
 					<Button
 						type='text'
 						icon={<EditOutlined />}
-						onClick={() => openEditModal(record)}
+						onClick={() => {
+							openEditModal(record);
+						}}
 						size='small'
 					/>
 					<Popconfirm
@@ -655,20 +704,42 @@ const ServiceRegistrations: React.FC = () => {
 						<Input.TextArea rows={2} placeholder='Nhập địa chỉ' />
 					</Form.Item>
 
-					<Form.Item
-						name='duration_months'
-						label='Thời gian sử dụng (tháng)'
-						rules={[
-							{ required: true, message: 'Vui lòng nhập thời gian sử dụng' },
-						]}
-					>
-						<InputNumber
-							min={1}
-							max={60}
-							placeholder='Số tháng'
-							style={{ width: '100%' }}
-						/>
-					</Form.Item>
+					<Row gutter={16}>
+						<Col span={12}>
+							<Form.Item
+								name='registration_date'
+								label='Ngày bắt đầu dịch vụ'
+								rules={[
+									{ required: true, message: 'Vui lòng chọn ngày bắt đầu' },
+								]}
+							>
+								<DatePicker
+									style={{ width: '100%' }}
+									placeholder='Chọn ngày bắt đầu'
+									format='DD/MM/YYYY'
+								/>
+							</Form.Item>
+						</Col>
+						<Col span={12}>
+							<Form.Item
+								name='duration_months'
+								label='Thời gian sử dụng (tháng)'
+								rules={[
+									{
+										required: true,
+										message: 'Vui lòng nhập thời gian sử dụng',
+									},
+								]}
+							>
+								<InputNumber
+									min={1}
+									max={60}
+									placeholder='Số tháng'
+									style={{ width: '100%' }}
+								/>
+							</Form.Item>
+						</Col>
+					</Row>
 
 					<Form.Item name='notes' label='Ghi chú'>
 						<Input.TextArea rows={3} placeholder='Nhập ghi chú' />
@@ -763,20 +834,42 @@ const ServiceRegistrations: React.FC = () => {
 						<Input.TextArea rows={2} placeholder='Nhập địa chỉ' />
 					</Form.Item>
 
-					<Form.Item
-						name='duration_months'
-						label='Thời gian sử dụng (tháng)'
-						rules={[
-							{ required: true, message: 'Vui lòng nhập thời gian sử dụng' },
-						]}
-					>
-						<InputNumber
-							min={1}
-							max={60}
-							placeholder='Số tháng'
-							style={{ width: '100%' }}
-						/>
-					</Form.Item>
+					<Row gutter={16}>
+						<Col span={12}>
+							<Form.Item
+								name='registration_date'
+								label='Ngày bắt đầu dịch vụ'
+								rules={[
+									{ required: true, message: 'Vui lòng chọn ngày bắt đầu' },
+								]}
+							>
+								<DatePicker
+									style={{ width: '100%' }}
+									placeholder='Chọn ngày bắt đầu'
+									format='DD/MM/YYYY'
+								/>
+							</Form.Item>
+						</Col>
+						<Col span={12}>
+							<Form.Item
+								name='duration_months'
+								label='Thời gian sử dụng (tháng)'
+								rules={[
+									{
+										required: true,
+										message: 'Vui lòng nhập thời gian sử dụng',
+									},
+								]}
+							>
+								<InputNumber
+									min={1}
+									max={60}
+									placeholder='Số tháng'
+									style={{ width: '100%' }}
+								/>
+							</Form.Item>
+						</Col>
+					</Row>
 
 					<Form.Item
 						name='status'
@@ -919,6 +1012,39 @@ const ServiceRegistrations: React.FC = () => {
 									borderRadius: '8px',
 									border: '1px solid #f0f0f0',
 								}}
+								bodyStyle={{ padding: '20px' }}
+							>
+								<Typography.Title
+									level={5}
+									style={{
+										marginBottom: '16px',
+										display: 'flex',
+										alignItems: 'center',
+									}}
+								>
+									<CalendarOutlined
+										style={{ marginRight: '8px', color: '#52c41a' }}
+									/>
+									Thông tin khách hàng
+								</Typography.Title>
+								<Descriptions column={2} size='small'>
+									<Descriptions.Item label='Tên khách hàng' span={1}>
+										{selectedRegistration.customer_name}
+									</Descriptions.Item>
+								</Descriptions>
+								<Descriptions column={2} size='small'>
+									<Descriptions.Item label='Địa chỉ' span={1}>
+										{selectedRegistration.address || '-'}
+									</Descriptions.Item>
+								</Descriptions>
+							</Card>
+							{/* Service Info */}
+							<Card
+								style={{
+									marginBottom: '16px',
+									borderRadius: '8px',
+									border: '1px solid #f0f0f0',
+								}}
 								bodyStyle={{ padding: '16px' }}
 							>
 								<Typography.Title
@@ -962,8 +1088,12 @@ const ServiceRegistrations: React.FC = () => {
 												</Col>
 												<Col span={8}>
 													<Statistic
-														title='Còn lại'
-														value={remainingAmount}
+														title={
+															remainingAmount < 0
+																? 'Khách trả thừa'
+																: 'Khách trả thiếu'
+														}
+														value={Math.abs(remainingAmount)}
 														precision={0}
 														suffix='VNĐ'
 														valueStyle={{

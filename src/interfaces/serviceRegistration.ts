@@ -19,6 +19,7 @@ export interface CreateServiceRegistrationRequest {
 	phone: string;
 	address?: string;
 	notes?: string;
+	registration_date?: string; // ISO date string
 	duration_months: number;
 	amount_paid?: number;
 	amount_due?: number;
@@ -29,6 +30,7 @@ export interface UpdateServiceRegistrationRequest {
 	phone?: string;
 	address?: string;
 	notes?: string;
+	registration_date?: string; // ISO date string
 	duration_months?: number;
 	status?: 'active' | 'expired' | 'cancelled';
 	amount_paid?: number;
