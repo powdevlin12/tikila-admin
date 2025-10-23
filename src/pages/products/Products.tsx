@@ -96,7 +96,7 @@ const Products: React.FC = () => {
 			title: 'Hình ảnh',
 			dataIndex: 'imageUrl',
 			key: 'imageUrl',
-			width: 100,
+			width: '10%',
 			render: (imageUrl: string, record: Product) => (
 				<div style={{ position: 'relative' }}>
 					{imageUrl ? (
@@ -171,13 +171,15 @@ const Products: React.FC = () => {
 			title: 'Tên dịch vụ',
 			dataIndex: 'title',
 			key: 'title',
+			width: '25%',
 			sorter: (a: Product, b: Product) => a.title.localeCompare(b.title),
 		},
 		{
-			title: 'Mô tả',
+			title: 'Mô tả ngắn',
 			dataIndex: 'description',
 			key: 'description',
 			ellipsis: true,
+			width: '25%',
 			render: (text: string) => (
 				<div style={{ maxWidth: 200 }} title={text}>
 					{text}
@@ -188,6 +190,7 @@ const Products: React.FC = () => {
 			title: 'Trạng thái',
 			dataIndex: 'isDelete',
 			key: 'isDelete',
+			width: '10%',
 			filters: [
 				{ text: 'Hoạt động', value: false },
 				{ text: 'Không hoạt động', value: true },
@@ -204,6 +207,7 @@ const Products: React.FC = () => {
 			title: 'Ngày tạo',
 			dataIndex: 'createdAt',
 			key: 'createdAt',
+			width: '15%',
 			sorter: (a: Product, b: Product) =>
 				new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
 			render: (createdAt: string) =>
@@ -212,7 +216,7 @@ const Products: React.FC = () => {
 		{
 			title: 'Thao tác',
 			key: 'actions',
-			width: 120,
+			width: '10%',
 			render: (_: unknown, record: Product) => (
 				<Space size='small'>
 					<Button
@@ -240,16 +244,14 @@ const Products: React.FC = () => {
 
 	if (!productsResponse) {
 		return (
-			<MainLayout title='Products Management'>
-				<div className='loading'>
-					<div>Đang tải...</div>
-					{!isAuthenticated && (
-						<div style={{ marginTop: '20px' }}>
-							<h3>Vui lòng đăng nhập để tiếp tục</h3>
-						</div>
-					)}
-				</div>
-			</MainLayout>
+			<div className='loading'>
+				<div>Đang tải...</div>
+				{!isAuthenticated && (
+					<div style={{ marginTop: '20px' }}>
+						<h3>Vui lòng đăng nhập để tiếp tục</h3>
+					</div>
+				)}
+			</div>
 		);
 	}
 

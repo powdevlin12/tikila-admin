@@ -87,18 +87,6 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 					))}
 				</ul>
 			</nav>
-
-			<div className='sidebar-footer'>
-				<div className='nav-item'>
-					<a href='#' className='nav-link'>
-						<span className='nav-icon'>
-							<SettingOutlined />
-						</span>
-						<span className='nav-label'>Settings</span>
-					</a>
-				</div>
-			</div>
-
 			{children}
 		</div>
 	);
