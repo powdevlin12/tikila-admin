@@ -397,6 +397,10 @@ const ServiceRegistrations: React.FC = () => {
 			dataIndex: 'amount_due',
 			key: 'amount_due',
 			width: 130,
+			sorter: (a: ServiceRegistration, b: ServiceRegistration) => {
+				return (a.amount_due || 0) - (b.amount_due || 0);
+			},
+			sortDirections: ['ascend' as const, 'descend' as const],
 			render: (amount: number | string) => {
 				const numAmount = Number(amount);
 				return numAmount ? `${numAmount.toLocaleString('vi-VN')} VNĐ` : '0 VNĐ';
@@ -406,6 +410,10 @@ const ServiceRegistrations: React.FC = () => {
 			title: 'Đã thanh toán',
 			dataIndex: 'amount_paid',
 			key: 'amount_paid',
+			sorter: (a: ServiceRegistration, b: ServiceRegistration) => {
+				return (a.amount_paid || 0) - (b.amount_paid || 0);
+			},
+			sortDirections: ['ascend' as const, 'descend' as const],
 			width: 130,
 			render: (amount: number | string) => {
 				const numAmount = Number(amount);
