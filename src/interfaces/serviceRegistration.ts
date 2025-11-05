@@ -2,6 +2,7 @@ export interface ServiceRegistration {
 	id: string;
 	customer_name: string;
 	phone: string;
+	parent_id?: string;
 	address?: string;
 	notes?: string;
 	registrationDate: string; // ISO date string
@@ -17,6 +18,7 @@ export interface ServiceRegistration {
 export interface CreateServiceRegistrationRequest {
 	customer_name: string;
 	phone: string;
+	parent_id?: string;
 	address?: string;
 	notes?: string;
 	registration_date?: string; // ISO date string
@@ -28,6 +30,7 @@ export interface CreateServiceRegistrationRequest {
 export interface UpdateServiceRegistrationRequest {
 	customer_name?: string;
 	phone?: string;
+	parent_id?: string;
 	address?: string;
 	notes?: string;
 	registration_date?: string; // ISO date string

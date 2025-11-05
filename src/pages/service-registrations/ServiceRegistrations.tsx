@@ -323,6 +323,7 @@ const ServiceRegistrations: React.FC = () => {
 		setEditingRegistration(registration);
 		editForm.setFieldsValue({
 			customer_name: registration.customer_name,
+			parent_id: registration.parent_id,
 			phone: registration.phone,
 			address: registration.address,
 			notes: registration.notes,
@@ -677,7 +678,7 @@ const ServiceRegistrations: React.FC = () => {
 					createForm.resetFields();
 				}}
 				confirmLoading={isLoading}
-				width={600}
+				width={800}
 			>
 				<Form
 					form={createForm}
@@ -692,6 +693,23 @@ const ServiceRegistrations: React.FC = () => {
 						]}
 					>
 						<Input placeholder='Nhập tên khách hàng' />
+					</Form.Item>
+
+					<Form.Item
+						name='parent_id'
+						label='Chuỗi con của doanh nghiệp nào?'
+						rules={[{ required: false }]}
+					>
+						<Select
+							showSearch
+							placeholder='Chọn doanh nghiệp'
+							optionFilterProp='label'
+							allowClear
+							options={registrations.map(reg => ({
+								value: reg.id,
+								label: reg.customer_name,
+							}))}
+						/>
 					</Form.Item>
 
 					<Form.Item
@@ -822,6 +840,23 @@ const ServiceRegistrations: React.FC = () => {
 						]}
 					>
 						<Input placeholder='Nhập tên khách hàng' />
+					</Form.Item>
+
+					<Form.Item
+						name='parent_id'
+						label='Chuỗi con của doanh nghiệp nào?'
+						rules={[{ required: false }]}
+					>
+						<Select
+							showSearch
+							placeholder='Chọn doanh nghiệp'
+							optionFilterProp='label'
+							allowClear
+							options={registrations.map(reg => ({
+								value: reg.id,
+								label: reg.customer_name,
+							}))}
+						/>
 					</Form.Item>
 
 					<Form.Item
