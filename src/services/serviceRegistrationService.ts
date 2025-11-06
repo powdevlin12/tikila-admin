@@ -65,6 +65,18 @@ export class ServiceRegistrationService {
 		return response.data;
 	}
 
+	// Update service registration
+	static async extendServiceRegistration(
+		id: string,
+		data: UpdateServiceRegistrationRequest,
+	): Promise<ServiceRegistrationResponse> {
+		const response = await apiClient.put<ServiceRegistrationResponse>(
+			`/service-registrations/extend/${id}`,
+			data,
+		);
+		return response.data;
+	}
+
 	// Delete service registration (soft delete)
 	static async deleteServiceRegistration(
 		id: string,

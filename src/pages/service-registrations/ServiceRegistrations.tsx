@@ -7,6 +7,7 @@ import {
 	EditOutlined,
 	FileTextOutlined,
 	FilterOutlined,
+	PlusCircleOutlined,
 	PlusOutlined,
 	ReloadOutlined,
 	WarningOutlined,
@@ -55,6 +56,8 @@ const ServiceRegistrations: React.FC = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [createModalVisible, setCreateModalVisible] = useState(false);
 	const [editModalVisible, setEditModalVisible] = useState(false);
+	const [extendExpireModalVisible, setExtendExpireModalVisible] =
+		useState(false);
 	const [filterModalVisible, setFilterModalVisible] = useState(false);
 	const [detailModalVisible, setDetailModalVisible] = useState(false);
 	const [editingRegistration, setEditingRegistration] =
@@ -206,6 +209,30 @@ const ServiceRegistrations: React.FC = () => {
 		}
 	};
 
+	const handleExtendExpired = async (registration: ServiceRegistration) => {
+		if (!checkAuthentication(isAuthenticated, token) || !editingRegistration) {
+			return;
+		}
+
+		try {
+			setIsLoading(true);
+			await ServiceRegistrationService.extendServiceRegistration(
+				editingRegistration?.id ?? '',
+				registration,
+			);
+			setExtendExpireModalVisible(false);
+			setEditingRegistration(null);
+			editForm.resetFields();
+			message.success('Gia hạn đăng ký dịch vụ thành công');
+			mutateRegistrations();
+			mutateStats();
+		} catch (error) {
+			handleApiError(error, 'Lỗi khi gia hạn đăng ký dịch vụ');
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	// Handle delete service registration
 	const handleDeleteRegistration = async (
 		registration: ServiceRegistration,
@@ -338,6 +365,35 @@ const ServiceRegistrations: React.FC = () => {
 		setEditModalVisible(true);
 	};
 
+	const openModalExtendExpired = (registration: ServiceRegistration) => {
+		setEditingRegistration(registration);
+		editForm.setFieldsValue({
+			customer_name: registration.customer_name,
+			parent_id: registration.parent_id,
+			phone: registration.phone,
+			address: registration.address,
+			notes: registration.notes,
+			registration_date: registration.registrationDate
+				? dayjs(registration.registrationDate)
+				: null,
+			duration_months: 1,
+			status: registration.status,
+			amount_paid: 0,
+			amount_due: 0,
+		});
+		setExtendExpireModalVisible(true);
+	};
+
+	// Get children for a parent registration
+	const getChildren = (parentId: string): ServiceRegistration[] => {
+		return registrations.filter(reg => reg.parent_id === parentId);
+	};
+
+	// Check if a registration has children
+	const hasChildren = (recordId: string): boolean => {
+		return registrations.some(reg => reg.parent_id === recordId);
+	};
+
 	// Table columns - Simplified version with only important info
 	const columns = [
 		{
@@ -345,12 +401,42 @@ const ServiceRegistrations: React.FC = () => {
 			dataIndex: 'customer_name',
 			key: 'customer_name',
 			width: 200,
+			render: (name: string, record: ServiceRegistration) => {
+				const childrenCount = getChildren(record.id).length;
+				return (
+					<Space>
+						<span>{name}</span>
+						{childrenCount > 0 && (
+							<Tag color='cyan' style={{ fontSize: '11px' }}>
+								{childrenCount} chuỗi con
+							</Tag>
+						)}
+					</Space>
+				);
+			},
+		},
+		{
+			title: 'Thuộc về',
+			dataIndex: 'parent_id',
+			key: 'parent_id',
+			width: 150,
+			render: (parentId: string | undefined) => {
+				if (!parentId) return <Tag color='default'>Doanh nghiệp chính</Tag>;
+				const parent = registrations.find(reg => reg.id === parentId);
+				return parent ? (
+					<Tag color='blue' style={{ fontSize: '11px' }}>
+						{parent.customer_name}
+					</Tag>
+				) : (
+					<Tag color='orange'>Không tìm thấy</Tag>
+				);
+			},
 		},
 		{
 			title: 'Địa chỉ',
 			dataIndex: 'address',
 			key: 'address',
-			width: 250,
+			width: 200,
 			ellipsis: true,
 		},
 		{
@@ -456,14 +542,22 @@ const ServiceRegistrations: React.FC = () => {
 						size='small'
 					/>
 					<Popconfirm
-						title='Xác nhận xóa'
-						description='Bạn có chắc chắn muốn xóa đăng ký này?'
+						title='Xác nhận huỷ'
+						description='Bạn có chắc chắn muốn huỷ đăng ký của địa chỉ này?'
 						onConfirm={() => handleDeleteRegistration(record)}
 						okText='Xóa'
 						cancelText='Hủy'
 					>
 						<Button type='text' icon={<DeleteOutlined />} danger size='small' />
 					</Popconfirm>
+					<Button
+						type='text'
+						icon={<PlusCircleOutlined />}
+						onClick={() => {
+							openModalExtendExpired(record);
+						}}
+						size='small'
+					/>
 				</Space>
 			),
 		},
@@ -659,6 +753,80 @@ const ServiceRegistrations: React.FC = () => {
 							`${range[0]}-${range[1]} của ${total} mục`,
 					}}
 					scroll={{ x: 1000 }}
+					expandable={{
+						expandedRowRender: record => {
+							const children = getChildren(record.id);
+							if (children.length === 0) return null;
+
+							return (
+								<div
+									style={{
+										margin: 0,
+										padding: '12px 16px',
+										backgroundColor: '#f8f9fa',
+										borderRadius: '8px',
+									}}
+								>
+									<div
+										style={{
+											marginBottom: 12,
+											fontWeight: 600,
+											color: '#1890ff',
+											fontSize: '14px',
+										}}
+									>
+										📋 Danh sách chuỗi con ({children.length}):
+									</div>
+									<Table
+										columns={columns}
+										dataSource={children}
+										rowKey='id'
+										pagination={false}
+										size='small'
+										expandable={{ childrenColumnName: 'none' }}
+										bordered
+										onRow={childRecord => ({
+											onClick: e => {
+												e.stopPropagation();
+												openDetailModal(childRecord);
+											},
+											style: {
+												cursor: 'pointer',
+												backgroundColor: '#ffffff',
+											},
+										})}
+									/>
+								</div>
+							);
+						},
+						rowExpandable: record => hasChildren(record.id),
+						expandIcon: ({ expanded, onExpand, record }) => {
+							const childrenCount = getChildren(record.id).length;
+							if (childrenCount === 0) return null;
+
+							return expanded ? (
+								<Button
+									type='text'
+									size='small'
+									icon={<span>▼</span>}
+									onClick={e => {
+										e.stopPropagation();
+										onExpand(record, e);
+									}}
+								/>
+							) : (
+								<Button
+									type='text'
+									size='small'
+									icon={<span>▶</span>}
+									onClick={e => {
+										e.stopPropagation();
+										onExpand(record, e);
+									}}
+								/>
+							);
+						},
+					}}
 					onRow={record => {
 						return {
 							onClick: () => openDetailModal(record),
@@ -825,7 +993,7 @@ const ServiceRegistrations: React.FC = () => {
 					editForm.resetFields();
 				}}
 				confirmLoading={isLoading}
-				width={600}
+				width={800}
 			>
 				<Form
 					form={editForm}
@@ -921,7 +1089,6 @@ const ServiceRegistrations: React.FC = () => {
 					>
 						<Select placeholder='Chọn trạng thái'>
 							<Option value='active'>Đang hoạt động</Option>
-							<Option value='expired'>Đã hết hạn</Option>
 							<Option value='cancelled'>Đã hủy</Option>
 						</Select>
 					</Form.Item>
@@ -930,6 +1097,84 @@ const ServiceRegistrations: React.FC = () => {
 						<Input.TextArea rows={3} placeholder='Nhập ghi chú' />
 					</Form.Item>
 
+					<Row gutter={16}>
+						<Col span={12}>
+							<Form.Item
+								name='amount_due'
+								label='Số tiền phải trả (VNĐ)'
+								rules={[
+									{ required: false },
+									{ type: 'number', min: 0, message: 'Số tiền phải >= 0' },
+								]}
+							>
+								<InputNumber
+									min={0}
+									placeholder='Nhập số tiền phải trả'
+									style={{ width: '100%' }}
+									formatter={value =>
+										`${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+									}
+								/>
+							</Form.Item>
+						</Col>
+						<Col span={12}>
+							<Form.Item
+								name='amount_paid'
+								label='Số tiền đã thanh toán (VNĐ)'
+								rules={[
+									{ required: false },
+									{ type: 'number', min: 0, message: 'Số tiền phải >= 0' },
+								]}
+							>
+								<InputNumber
+									min={0}
+									placeholder='Nhập số tiền đã thanh toán'
+									style={{ width: '100%' }}
+									formatter={value =>
+										`${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+									}
+								/>
+							</Form.Item>
+						</Col>
+					</Row>
+				</Form>
+			</Modal>
+
+			{/* Extend expired Modal */}
+			<Modal
+				title='Gia hạn đăng ký dịch vụ'
+				open={extendExpireModalVisible}
+				onOk={() => editForm.submit()}
+				onCancel={() => {
+					setExtendExpireModalVisible(false);
+					setEditingRegistration(null);
+					editForm.resetFields();
+				}}
+				confirmLoading={isLoading}
+				width={800}
+			>
+				<Form form={editForm} layout='vertical' onFinish={handleExtendExpired}>
+					<Row gutter={16}>
+						<Col span={12}>
+							<Form.Item
+								name='duration_months'
+								label='Gia hạn thêm bao nhiêu tháng'
+								rules={[
+									{
+										required: true,
+										message: 'Vui lòng nhập thời gian sử dụng',
+									},
+								]}
+							>
+								<InputNumber
+									min={1}
+									max={60}
+									placeholder='Số tháng'
+									style={{ width: '100%' }}
+								/>
+							</Form.Item>
+						</Col>
+					</Row>
 					<Row gutter={16}>
 						<Col span={12}>
 							<Form.Item
