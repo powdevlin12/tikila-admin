@@ -65,6 +65,7 @@ const ServiceRegistrations: React.FC = () => {
 	const [selectedRegistration, setSelectedRegistration] =
 		useState<ServiceRegistration | null>(null);
 	const [filters, setFilters] = useState<ServiceRegistrationFilter>({});
+	const [searchText, setSearchText] = useState('');
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
 	const [createForm] = Form.useForm();
@@ -74,7 +75,7 @@ const ServiceRegistrations: React.FC = () => {
 	// Auth info
 	const { isAuthenticated, token } = useAuthStore();
 
-	// Build query params
+	// Build query params (không gửi search lên BE nữa)
 	const queryParams = new URLSearchParams({
 		...(filters as Record<string, string>),
 		page: String(currentPage),
@@ -94,6 +95,16 @@ const ServiceRegistrations: React.FC = () => {
 		};
 	}>(`/service-registrations?${queryParams.toString()}`);
 
+	// Fetch ALL registrations (không phân trang) cho dropdown và parent lookup
+	const { data: allRegistrationsResponse, mutate: mutateAllRegistrations } =
+		useApi<{
+			success: boolean;
+			message: string;
+			data: {
+				data: ServiceRegistration[];
+			};
+		}>('/service-registrations?limit=999999');
+
 	// Fetch statistics
 	const { data: statsResponse, mutate: mutateStats } = useApi<{
 		success: boolean;
@@ -108,19 +119,50 @@ const ServiceRegistrations: React.FC = () => {
 
 	// Extract data from API response
 	const registrations = registrationsResponse?.data?.data || [];
+	const allRegistrations = allRegistrationsResponse?.data?.data || [];
 	console.log({ registrations });
-	const pagination = registrationsResponse?.data || {
-		total: 0,
-		page: 1,
-		limit: 10,
-		totalPages: 0,
-	};
 	const stats = statsResponse?.data || {
 		total: 0,
 		active: 0,
 		cancelled: 0,
 		expiring_soon: 0,
 	};
+
+	// Function to remove Vietnamese accents
+	const removeVietnameseAccents = (str: string): string => {
+		if (!str) return '';
+		return str
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.replace(/đ/g, 'd')
+			.replace(/Đ/g, 'D');
+	};
+
+	// Filter registrations by search text (Frontend filtering)
+	const filteredRegistrations = searchText
+		? registrations.filter(reg => {
+				const searchLower = removeVietnameseAccents(searchText);
+				const customerName = removeVietnameseAccents(reg.customer_name || '');
+				const phone = removeVietnameseAccents(reg.phone || '');
+				const address = removeVietnameseAccents(reg.address || '');
+
+				return (
+					customerName.includes(searchLower) ||
+					phone.includes(searchLower) ||
+					address.includes(searchLower)
+				);
+		  })
+		: registrations;
+
+	// Recalculate pagination for filtered results
+	const filteredTotal = filteredRegistrations.length;
+	const startIndex = (currentPage - 1) * pageSize;
+	const endIndex = startIndex + pageSize;
+	const paginatedFilteredRegistrations = filteredRegistrations.slice(
+		startIndex,
+		endIndex,
+	);
 
 	// Add payment_stats safely
 	const paymentStats = (
@@ -167,6 +209,7 @@ const ServiceRegistrations: React.FC = () => {
 			setCreateModalVisible(false);
 			createForm.resetFields();
 			mutateRegistrations();
+			mutateAllRegistrations();
 			mutateStats();
 		} catch (error) {
 			handleApiError(error, 'Lỗi khi tạo đăng ký dịch vụ');
@@ -203,6 +246,7 @@ const ServiceRegistrations: React.FC = () => {
 			setEditingRegistration(null);
 			editForm.resetFields();
 			mutateRegistrations();
+			mutateAllRegistrations();
 			mutateStats();
 		} catch (error) {
 			handleApiError(error, 'Lỗi khi cập nhật đăng ký dịch vụ');
@@ -227,6 +271,7 @@ const ServiceRegistrations: React.FC = () => {
 			editForm.resetFields();
 			message.success('Gia hạn đăng ký dịch vụ thành công');
 			mutateRegistrations();
+			mutateAllRegistrations();
 			mutateStats();
 		} catch (error) {
 			handleApiError(error, 'Lỗi khi gia hạn đăng ký dịch vụ');
@@ -250,6 +295,7 @@ const ServiceRegistrations: React.FC = () => {
 			);
 			message.success('Xóa đăng ký dịch vụ thành công');
 			mutateRegistrations();
+			mutateAllRegistrations();
 			mutateStats();
 		} catch (error) {
 			handleApiError(error, 'Lỗi khi xóa đăng ký dịch vụ');
@@ -264,6 +310,18 @@ const ServiceRegistrations: React.FC = () => {
 		setPageSize(pageSize);
 	};
 
+	// Handle search
+	const handleSearch = (value: string) => {
+		setSearchText(value);
+		setCurrentPage(1); // Reset về trang 1 khi search
+	};
+
+	// Clear search
+	const clearSearch = () => {
+		setSearchText('');
+		setCurrentPage(1);
+	};
+
 	// Handle filter
 	const handleFilter = (values: {
 		status?: string;
@@ -271,6 +329,10 @@ const ServiceRegistrations: React.FC = () => {
 		date_range?: [Dayjs, Dayjs];
 		payment_status?: string;
 	}) => {
+		console.log({
+			payment_status: values.payment_status,
+		});
+
 		const newFilters: ServiceRegistrationFilter = {};
 
 		if (values.status) newFilters.status = values.status;
@@ -286,7 +348,7 @@ const ServiceRegistrations: React.FC = () => {
 		setFilters(newFilters);
 		setCurrentPage(1); // Reset về trang 1 khi filter
 		setFilterModalVisible(false);
-		mutateRegistrations();
+		// Không cần gọi mutateRegistrations() vì useApi sẽ tự động fetch lại khi queryParams thay đổi
 	};
 
 	// Clear filters
@@ -295,7 +357,7 @@ const ServiceRegistrations: React.FC = () => {
 		setCurrentPage(1); // Reset về trang 1
 		filterForm.resetFields();
 		setFilterModalVisible(false);
-		mutateRegistrations();
+		// Không cần gọi mutateRegistrations() vì useApi sẽ tự động fetch lại khi queryParams thay đổi
 	};
 
 	// Remove individual filter
@@ -310,7 +372,7 @@ const ServiceRegistrations: React.FC = () => {
 		}
 
 		setFilters(newFilters);
-		mutateRegistrations();
+		// Không cần gọi mutateRegistrations() vì useApi sẽ tự động fetch lại khi queryParams thay đổi
 	};
 
 	// Get filter display text
@@ -396,12 +458,12 @@ const ServiceRegistrations: React.FC = () => {
 
 	// Get children for a parent registration
 	const getChildren = (parentId: string): ServiceRegistration[] => {
-		return registrations.filter(reg => reg.parent_id === parentId);
+		return filteredRegistrations.filter(reg => reg.parent_id === parentId);
 	};
 
 	// Check if a registration has children
 	const hasChildren = (recordId: string): boolean => {
-		return registrations.some(reg => reg.parent_id === recordId);
+		return filteredRegistrations.some(reg => reg.parent_id === recordId);
 	};
 
 	// Table columns - Simplified version with only important info
@@ -432,7 +494,7 @@ const ServiceRegistrations: React.FC = () => {
 			width: 150,
 			render: (parentId: string | undefined) => {
 				if (!parentId) return <Tag color='default'>Doanh nghiệp chính</Tag>;
-				const parent = registrations.find(reg => reg.id === parentId);
+				const parent = allRegistrations.find(reg => reg.id === parentId);
 				return parent ? (
 					<Tag color='blue' style={{ fontSize: '11px' }}>
 						{parent.customer_name}
@@ -661,6 +723,15 @@ const ServiceRegistrations: React.FC = () => {
 					</div>
 					<div className='page-actions'>
 						<Space>
+							<Input.Search
+								placeholder='Tìm theo tên, SĐT hoặc địa chỉ...'
+								allowClear
+								enterButton
+								style={{ width: 300 }}
+								value={searchText}
+								onChange={e => handleSearch(e.target.value)}
+								onSearch={handleSearch}
+							/>
 							<Button
 								icon={<FilterOutlined />}
 								onClick={() => setFilterModalVisible(true)}
@@ -697,12 +768,17 @@ const ServiceRegistrations: React.FC = () => {
 				</div>
 
 				{/* Active Filters Display */}
-				{hasActiveFilters && (
+				{(hasActiveFilters || searchText) && (
 					<div className='active-filters' style={{ marginBottom: 16 }}>
 						<div className='filter-label'>
 							<strong>Đang lọc: </strong>
 						</div>
 						<Space wrap>
+							{searchText && (
+								<Tag closable onClose={clearSearch} color='blue'>
+									Tìm kiếm: "{searchText}"
+								</Tag>
+							)}
 							{Object.entries(filters).map(([key, value]) => {
 								// Don't show end_date separately if start_date is present
 								if (key === 'end_date' && filters.start_date) {
@@ -725,7 +801,10 @@ const ServiceRegistrations: React.FC = () => {
 							<Button
 								type='link'
 								size='small'
-								onClick={clearFilters}
+								onClick={() => {
+									clearFilters();
+									clearSearch();
+								}}
 								style={{ padding: 0 }}
 							>
 								Xóa tất cả
@@ -735,7 +814,7 @@ const ServiceRegistrations: React.FC = () => {
 				)}
 
 				{/* No filters message */}
-				{!hasActiveFilters && (
+				{!hasActiveFilters && !searchText && (
 					<div
 						style={{
 							marginBottom: 16,
@@ -750,13 +829,13 @@ const ServiceRegistrations: React.FC = () => {
 
 				<Table
 					columns={columns}
-					dataSource={registrations}
+					dataSource={paginatedFilteredRegistrations}
 					rowKey='id'
 					loading={isLoading}
 					pagination={{
 						current: currentPage,
 						pageSize: pageSize,
-						total: pagination.total,
+						total: filteredTotal,
 						showSizeChanger: true,
 						showQuickJumper: true,
 						showTotal: (total, range) =>
@@ -885,7 +964,7 @@ const ServiceRegistrations: React.FC = () => {
 							placeholder='Chọn doanh nghiệp'
 							optionFilterProp='label'
 							allowClear
-							options={registrations.map(reg => ({
+							options={allRegistrations.map(reg => ({
 								value: reg.id,
 								label: reg.customer_name,
 							}))}
@@ -1032,7 +1111,7 @@ const ServiceRegistrations: React.FC = () => {
 							placeholder='Chọn doanh nghiệp'
 							optionFilterProp='label'
 							allowClear
-							options={registrations.map(reg => ({
+							options={allRegistrations.map(reg => ({
 								value: reg.id,
 								label: reg.customer_name,
 							}))}
