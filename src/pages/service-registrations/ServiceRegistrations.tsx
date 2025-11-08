@@ -65,12 +65,21 @@ const ServiceRegistrations: React.FC = () => {
 	const [selectedRegistration, setSelectedRegistration] =
 		useState<ServiceRegistration | null>(null);
 	const [filters, setFilters] = useState<ServiceRegistrationFilter>({});
+	const [currentPage, setCurrentPage] = useState(1);
+	const [pageSize, setPageSize] = useState(10);
 	const [createForm] = Form.useForm();
 	const [editForm] = Form.useForm();
 	const [filterForm] = Form.useForm();
 
 	// Auth info
 	const { isAuthenticated, token } = useAuthStore();
+
+	// Build query params
+	const queryParams = new URLSearchParams({
+		...(filters as Record<string, string>),
+		page: String(currentPage),
+		limit: String(pageSize),
+	});
 
 	// Fetch data với filters
 	const { data: registrationsResponse, mutate: mutateRegistrations } = useApi<{
@@ -83,11 +92,7 @@ const ServiceRegistrations: React.FC = () => {
 			limit: number;
 			totalPages: number;
 		};
-	}>(
-		`/service-registrations?${new URLSearchParams(
-			filters as Record<string, string>,
-		).toString()}`,
-	);
+	}>(`/service-registrations?${queryParams.toString()}`);
 
 	// Fetch statistics
 	const { data: statsResponse, mutate: mutateStats } = useApi<{
@@ -96,7 +101,6 @@ const ServiceRegistrations: React.FC = () => {
 		data: {
 			total: number;
 			active: number;
-			expired: number;
 			cancelled: number;
 			expiring_soon: number;
 		};
@@ -114,7 +118,6 @@ const ServiceRegistrations: React.FC = () => {
 	const stats = statsResponse?.data || {
 		total: 0,
 		active: 0,
-		expired: 0,
 		cancelled: 0,
 		expiring_soon: 0,
 	};
@@ -124,7 +127,6 @@ const ServiceRegistrations: React.FC = () => {
 		statsResponse?.data as {
 			total: number;
 			active: number;
-			expired: number;
 			cancelled: number;
 			expiring_soon: number;
 			payment_stats?: {
@@ -256,6 +258,12 @@ const ServiceRegistrations: React.FC = () => {
 		}
 	};
 
+	// Handle pagination change
+	const handleTableChange = (page: number, pageSize: number) => {
+		setCurrentPage(page);
+		setPageSize(pageSize);
+	};
+
 	// Handle filter
 	const handleFilter = (values: {
 		status?: string;
@@ -276,6 +284,7 @@ const ServiceRegistrations: React.FC = () => {
 			newFilters.payment_status = values.payment_status;
 
 		setFilters(newFilters);
+		setCurrentPage(1); // Reset về trang 1 khi filter
 		setFilterModalVisible(false);
 		mutateRegistrations();
 	};
@@ -283,6 +292,7 @@ const ServiceRegistrations: React.FC = () => {
 	// Clear filters
 	const clearFilters = () => {
 		setFilters({});
+		setCurrentPage(1); // Reset về trang 1
 		filterForm.resetFields();
 		setFilterModalVisible(false);
 		mutateRegistrations();
@@ -514,11 +524,11 @@ const ServiceRegistrations: React.FC = () => {
 			width: 130,
 			sorter: (a: ServiceRegistration, b: ServiceRegistration) => {
 				// Order: active > expired > cancelled
-				const order = { active: 3, expired: 2, cancelled: 1 };
+				const order = { active: 3, cancelled: 1 };
 				return order[a.status] - order[b.status];
 			},
 			sortDirections: ['ascend' as const, 'descend' as const],
-			render: (status: 'active' | 'expired' | 'cancelled') => {
+			render: (status: 'active' | 'cancelled') => {
 				// ServiceRegistrationService.getStatusLabel(status),
 				return (
 					<Text type={status === 'active' ? 'success' : 'danger'}>
@@ -584,7 +594,7 @@ const ServiceRegistrations: React.FC = () => {
 				<Col span={6}>
 					<Card>
 						<Statistic
-							title='Sắp hết hạn'
+							title='Sắp hết hạn trong 30 ngày'
 							value={stats.expiring_soon}
 							valueStyle={{ color: '#cf1322' }}
 							prefix={<WarningOutlined />}
@@ -594,8 +604,8 @@ const ServiceRegistrations: React.FC = () => {
 				<Col span={6}>
 					<Card>
 						<Statistic
-							title='Đã hết hạn'
-							value={stats.expired}
+							title='Đã huỷ đăng ký'
+							value={stats.cancelled}
 							valueStyle={{ color: '#cf1322' }}
 						/>
 					</Card>
@@ -744,13 +754,15 @@ const ServiceRegistrations: React.FC = () => {
 					rowKey='id'
 					loading={isLoading}
 					pagination={{
-						current: pagination.page,
-						pageSize: pagination.limit,
+						current: currentPage,
+						pageSize: pageSize,
 						total: pagination.total,
 						showSizeChanger: true,
 						showQuickJumper: true,
 						showTotal: (total, range) =>
 							`${range[0]}-${range[1]} của ${total} mục`,
+						onChange: handleTableChange,
+						onShowSizeChange: handleTableChange,
 					}}
 					scroll={{ x: 1000 }}
 					expandable={{
@@ -1244,7 +1256,6 @@ const ServiceRegistrations: React.FC = () => {
 					<Form.Item name='status' label='Trạng thái'>
 						<Select placeholder='Chọn trạng thái' allowClear>
 							<Option value='active'>Đang hoạt động</Option>
-							<Option value='expired'>Đã hết hạn</Option>
 							<Option value='cancelled'>Đã hủy</Option>
 						</Select>
 					</Form.Item>

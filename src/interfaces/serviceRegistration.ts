@@ -8,7 +8,7 @@ export interface ServiceRegistration {
 	registrationDate: string; // ISO date string
 	duration_months: number;
 	end_date: string; // ISO date string
-	status: 'active' | 'expired' | 'cancelled';
+	status: 'active' | 'cancelled';
 	amount_paid: number;
 	amount_due: number;
 	createdAt: string;
