@@ -75,9 +75,10 @@ const ServiceRegistrations: React.FC = () => {
 	// Auth info
 	const { isAuthenticated, token } = useAuthStore();
 
-	// Build query params (không gửi search lên BE nữa)
+	// Build query params - gửi search lên BE để tìm kiếm FULLTEXT trong notes
 	const queryParams = new URLSearchParams({
 		...(filters as Record<string, string>),
+		...(searchText && { search: searchText }), // Gửi search lên BE
 		page: String(currentPage),
 		limit: String(pageSize),
 	});
@@ -128,41 +129,12 @@ const ServiceRegistrations: React.FC = () => {
 		expiring_soon: 0,
 	};
 
-	// Function to remove Vietnamese accents
-	const removeVietnameseAccents = (str: string): string => {
-		if (!str) return '';
-		return str
-			.toLowerCase()
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.replace(/đ/g, 'd')
-			.replace(/Đ/g, 'D');
-	};
-
-	// Filter registrations by search text (Frontend filtering)
-	const filteredRegistrations = searchText
-		? registrations.filter(reg => {
-				const searchLower = removeVietnameseAccents(searchText);
-				const customerName = removeVietnameseAccents(reg.customer_name || '');
-				const phone = removeVietnameseAccents(reg.phone || '');
-				const address = removeVietnameseAccents(reg.address || '');
-
-				return (
-					customerName.includes(searchLower) ||
-					phone.includes(searchLower) ||
-					address.includes(searchLower)
-				);
-		  })
-		: registrations;
+	// Không cần filter ở frontend nữa vì backend đã xử lý FULLTEXT search
+	const filteredRegistrations = registrations;
 
 	// Recalculate pagination for filtered results
-	const filteredTotal = filteredRegistrations.length;
-	const startIndex = (currentPage - 1) * pageSize;
-	const endIndex = startIndex + pageSize;
-	const paginatedFilteredRegistrations = filteredRegistrations.slice(
-		startIndex,
-		endIndex,
-	);
+	const filteredTotal = registrationsResponse?.data?.total || 0;
+	const paginatedFilteredRegistrations = filteredRegistrations;
 
 	// Add payment_stats safely
 	const paymentStats = (
@@ -724,7 +696,7 @@ const ServiceRegistrations: React.FC = () => {
 					<div className='page-actions'>
 						<Space>
 							<Input.Search
-								placeholder='Tìm theo tên, SĐT hoặc địa chỉ...'
+								placeholder='Tìm kiếm...'
 								allowClear
 								enterButton
 								style={{ width: 300 }}
