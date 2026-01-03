@@ -22,10 +22,10 @@ export interface CompanyInfo {
 export interface CompanyContact {
 	id?: number;
 	phone?: string;
-	facebook_link?: string;
-	zalo_link?: string;
-	tiktok_link?: string;
-	created_at?: string;
+	facebookLink?: string;
+	zaloLink?: string;
+	tiktokLink?: string;
+	createdAt?: string;
 }
 
 export interface Service {

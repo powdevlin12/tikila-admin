@@ -613,7 +613,7 @@ export const Company = () => {
 									<Input
 										value={
 											contactData.facebook_link ??
-											contactInfo.facebook_link ??
+											contactInfo.facebookLink ??
 											''
 										}
 										onChange={e =>
@@ -628,7 +628,7 @@ export const Company = () => {
 								<div className='form-group'>
 									<label>Zalo:</label>
 									<Input
-										value={contactData.zalo_link ?? contactInfo.zalo_link ?? ''}
+										value={contactData.zalo_link ?? contactInfo.zaloLink ?? ''}
 										onChange={e =>
 											handleContactInputChange('zalo_link', e.target.value)
 										}
@@ -639,7 +639,7 @@ export const Company = () => {
 									<label>TikTok:</label>
 									<Input
 										value={
-											contactData.tiktok_link ?? contactInfo.tiktok_link ?? ''
+											contactData.tiktok_link ?? contactInfo.tiktokLink ?? ''
 										}
 										onChange={e =>
 											handleContactInputChange('tiktok_link', e.target.value)
@@ -675,15 +675,15 @@ export const Company = () => {
 							</p>
 							<p>
 								<strong>Facebook:</strong>{' '}
-								{contactInfo.facebook_link || 'Chưa có thông tin'}
+								{contactInfo.facebookLink || 'Chưa có thông tin'}
 							</p>
 							<p>
 								<strong>Zalo:</strong>{' '}
-								{contactInfo.zalo_link || 'Chưa có thông tin'}
+								{contactInfo.zaloLink || 'Chưa có thông tin'}
 							</p>
 							<p>
 								<strong>TikTok:</strong>{' '}
-								{contactInfo.tiktok_link || 'Chưa có thông tin'}
+								{contactInfo.tiktokLink || 'Chưa có thông tin'}
 							</p>
 						</div>
 					)}
