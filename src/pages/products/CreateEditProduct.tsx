@@ -414,9 +414,9 @@ const CreateEditProduct: React.FC = () => {
 							</div>
 						</Form.Item>
 
-						<Form.Item name='image_url' label='Hoặc nhập URL hình ảnh'>
+						{/* <Form.Item name='image_url' label='Hoặc nhập URL hình ảnh'>
 							<Input placeholder='Nhập URL hình ảnh (tùy chọn)' size='large' />
-						</Form.Item>
+						</Form.Item> */}
 
 						{/* Action buttons */}
 						<Form.Item style={{ marginTop: 40 }}>

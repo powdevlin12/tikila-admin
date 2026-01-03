@@ -1,4 +1,12 @@
-import { Form, Input, Button, Card, Typography, message, Spin } from 'antd';
+import {
+	Form,
+	Input,
+	Button,
+	Card,
+	Typography,
+	message as antdMessage,
+	Spin,
+} from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -10,6 +18,7 @@ import { useState } from 'react';
 const { Title, Text } = Typography;
 
 const Login: React.FC = () => {
+	const [message, contextHolder] = antdMessage.useMessage();
 	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate();
 	const { login } = useAuthStore();
@@ -30,7 +39,6 @@ const Login: React.FC = () => {
 				navigate('/admin');
 			}
 		} catch (error: unknown) {
-			console.error('Login error:', error);
 			const errorMessage =
 				error instanceof Error && 'response' in error && error.response
 					? (error.response as any)?.data?.message
@@ -46,6 +54,7 @@ const Login: React.FC = () => {
 
 	return (
 		<div className='login-container'>
+			{contextHolder}
 			<Card className='login-card'>
 				<div className='login-header'>
 					<Title level={2} className='login-title'>
